@@ -11,6 +11,8 @@ import os
 import ffmpeg
 import traceback
 import random
+import re
+import video_creator
 
 class TimeoutError(Exception):
     pass
@@ -372,275 +374,306 @@ class Filter(commands.Cog):
             'zscale'
         )
     
-    def get_randomized_catalog(self):
-        random_catalog = {
-            'v lagfun': 'decay={}'.format(random.uniform(0.7, 1.0)),
-            'v median': 'radius={}'.format(random.randint(1, 10)),
-            'v eq': [ 
-                'contrast={}'.format(random.uniform(0.5, 3)),
-                'saturation={}'.format(random.uniform(0, 3)),
-                'gamma={}'.format(random.uniform(0.6, 1.5)),
-                'brightness={}'.format(random.uniform(-0.15, 0.15)),
-            ],
-            'v hue': 'h={}'.format(random.uniform(0, 360)),
-            'v fps': 'fps={}'.format(random.randint(3, 30)),
-            'v amplify': 'radius={}'.format(random.randint(2, 25)),
 
-            'a volume': 'volume={} precision=fixed'.format(random.uniform(1, 1000)),
-            'a chorus': 'delays={}ms decays=1 speeds={} depths=4'.format(random.randint(30, 80), random.randint(6, 30)),
-            'a superequalizer': '1b={} 2b={} 3b={} 4b={} 5b={} 6b={} 7b={} 8b={} 9b={} 10b={} 11b={} 12b={} 13b={} 14b={} 15b={} 16b={} 17b={} 18b={}'.format(
-                random.uniform(0.5, 20),random.uniform(0.5, 20),random.uniform(0.5, 20),random.uniform(0.5, 20),random.uniform(0.5, 20),
-                random.uniform(0.5, 20),random.uniform(0.5, 20),random.uniform(0.5, 20),random.uniform(0.5, 20),random.uniform(0.5, 20),
-                random.uniform(0.5, 20),random.uniform(0.5, 20),random.uniform(0.5, 20),random.uniform(0.5, 20),random.uniform(0.5, 20),
-                random.uniform(0.5, 20),random.uniform(0.5, 20),random.uniform(0.5, 20),
-            ),
-        }
-        return random_catalog
-    
-    @commands.command(description='Increase video volume. If you get a filesize of 0, lower the volume!', pass_context=True)
+    async def _volume(self, ctx, vstream, astream, kwargs):
+        astream = astream.filter('volume', **kwargs)
+        return vstream, astream, {}
+    @commands.command(description='Increase video volume.', pass_context=True)
     async def volume(self, ctx, volume_db : float):
-        await self.execute_filter(ctx, [['a', 'volume', 'volume={} precision=fixed'.format(volume_db)]])
+        await video_creator.apply_filters_and_send(ctx, self._volume, {'volume':volume_db, 'precision': 'fixed'})
     
-    @commands.command(description='Make lighter pixels leak into next frames more i think not sure. Use a value between 0 and 1. Value of 1 makes nothing ever fade away.')
-    async def lagfun(self, ctx, decay : float):
+
+    async def _lagfun(self, ctx, vstream, astream, kwargs):
+        vstream = vstream.filter('lagfun', **kwargs)
+        return vstream, astream, {}
+    @commands.command(description='Make lighter pixels leak into next frames. Use a value between 0 and 1. Value of 1 makes nothing ever fade away.')
+    async def lagfun(self, ctx, decay : float = 0.99):
         decay = max(0, min(decay, 1.0))
-        await self.execute_filter(ctx, [['v', 'lagfun', 'decay={}'.format(decay)]])
+        await video_creator.apply_filters_and_send(ctx, self._lagfun, {'decay':decay})
 
-    @commands.command(description='Blur the video. Value is radius of the blur', pass_context=True)
-    async def blur(self, ctx, radius : float): # supposed to be int lmao
-        await self.execute_filter(ctx, [['v', 'median', 'radius={}'.format(radius)]])
+
+    async def _blur(self, ctx, vstream, astream, kwargs):
+        vstream = vstream.filter('median', **kwargs)
+        return vstream, astream, {}
+    @commands.command(description='Blur the video. Use a value between 1 and 127.', pass_context=True)
+    async def blur(self, ctx, radius : float = 10): # supposed to be int lmao
+        radius = max(1, min(radius, 127))
+        await video_creator.apply_filters_and_send(ctx, self._blur, {'radius':radius})
     
+
+    async def _contrast(self, ctx, vstream, astream, kwargs):
+        vstream = vstream.filter('eq', **kwargs)
+        return vstream, astream, {}
     @commands.command(description='Increase/decrease contrast', pass_context=True)
-    async def contrast(self, ctx, contrast : float):
-        await self.execute_filter(ctx, [['v', 'eq', 'contrast={}'.format(contrast)]])
+    async def contrast(self, ctx, contrast : float = 10):
+        contrast = min(-1000, max(contrast, 1000))
+        await video_creator.apply_filters_and_send(ctx, self._contrast, {'contrast':contrast})
 
+
+    async def _saturation(self, ctx, vstream, astream, kwargs):
+        vstream = vstream.filter('hue', **kwargs)
+        return vstream, astream, {}
     @commands.command(description='Increase/decrease saturation', pass_context=True)
-    async def saturation(self, ctx, saturation : float):
-        await self.execute_filter(ctx, [['v', 'eq', 'saturation={}'.format(saturation)]])
+    async def saturation(self, ctx, saturation : float = 10):
+        saturation = min(-10, max(saturation, 10))
+        await video_creator.apply_filters_and_send(ctx, self._saturation, {'s':saturation})
+    @commands.command(description='Increase/decrease saturation', pass_context=True)
+    async def saturate(self, ctx, saturation : float = 10):
+        await self.saturation(ctx, saturation)
 
+
+    async def _gamma(self, ctx, vstream, astream, kwargs):
+        vstream = vstream.filter('eq', **kwargs)
+        return vstream, astream, {}
     @commands.command(description='Increase/decrease gamma', pass_context=True)
-    async def gamma(self, ctx, gamma : float):
-        await self.execute_filter(ctx, [['v', 'eq', 'gamma={}'.format(gamma)]])
+    async def gamma(self, ctx, gamma : float = 1.3):
+        gamma = min(0.1, max(gamma, 10))
+        await video_creator.apply_filters_and_send(ctx, self._gamma, {'gamma':gamma})
     
+
+    async def _brightness(self, ctx, vstream, astream, kwargs):
+        vstream = vstream.filter('eq', **kwargs)
+        return vstream, astream, {}
     @commands.command(description='Increase/decrease brightness', pass_context=True)
     async def brightness(self, ctx, brightness : float):
-        await self.execute_filter(ctx, [['v', 'eq', 'brightness={}'.format(brightness)]])
+        brightness = min(-1, max(brightness, 1))
+        await video_creator.apply_filters_and_send(ctx, self._brightness, {'brightness':brightness})
 
+
+    async def _hue(self, ctx, vstream, astream, kwargs):
+        vstream = vstream.filter('hue', **kwargs)
+        return vstream, astream, {}
     @commands.command(description='Adjust hue', pass_context=True)
-    async def hue(self, ctx, degrees : float):
-        await self.execute_filter(ctx, [['v', 'hue', 'h={}'.format(degrees)]])
-    
-    @commands.command(description='Wobbly sound. Default speed is 20', pass_context=True)
-    async def wobble(self, ctx, speed=20.0):
-        await self.execute_filter(ctx, [['a', 'chorus', 'delays=80ms decays=1 speeds={} depths=4'.format(speed)]])
+    async def hue(self, ctx, degrees : str):
+        await video_creator.apply_filters_and_send(ctx, self._hue, {'h':degrees})
+    @commands.command(description='Make a rainbow effect. You can provide a speed too!', pass_context=True)
+    async def rainbow(self, ctx, speed : float = 1):
+        await self.hue(ctx, f't*{speed*360}')
 
-    @commands.command(description='Resize the video. Default is 480x360', pass_context=True)
-    async def scale(self, ctx, w=480, h=360):
-        await self.execute_filter(ctx, [['v', 'scale', 'w={} h={}'.format(w, h)], ['v', 'setsar', 'r=1:1']])
+
+    async def _wobble(self, ctx, vstream, astream, kwargs):
+        astream = astream.filter('chorus', delays='80ms', decays=1, depths=4, **kwargs)
+        return vstream, astream, {}
+    @commands.command(description='Wobbly sound. Default speed is 8', pass_context=True)
+    async def wobble(self, ctx, speed : str = '8'):
+        await video_creator.apply_filters_and_send(ctx, self._wobble, {'speeds':speed})
+
+
+    async def _scale(self, ctx, vstream, astream, kwargs):
+        vstream = (
+            vstream
+            .filter('scale', **kwargs)
+            .filter('setsar', r='1:1')
+        )
+        return vstream, astream, {}
+    @commands.command(description='Resize the video. Default is 360x270', pass_context=True)
+    async def scale(self, ctx, w=360, h=270):
+        w = max(w, 50)
+        h = max(h, 50)
+        await video_creator.apply_filters_and_send(ctx, self._scale, {'w':w, 'h':h})
     
+
+    async def _fps(self, ctx, vstream, astream, kwargs):
+        vstream = vstream.filter('fps', **kwargs)
+        return vstream, astream, {}
     @commands.command(description='Change the FPS. default is 15fps', pass_context=True)
     async def fps(self, ctx, framerate=15):
-        await self.execute_filter(ctx, [['v', 'fps', 'fps={}'.format(framerate)]])
+        await video_creator.apply_filters_and_send(ctx, self._fps, {'fps':framerate})
 
+
+    async def _amplify(self, ctx, vstream, astream, kwargs):
+        vstream = vstream.filter('amplify', **kwargs)
+        return vstream, astream, {}
     @commands.command(description='Make stuff colorful and sorta deepfried. Value between 4 and 16 is fun', pass_context=True)
     async def amplify(self, ctx, radius : float):
-        await self.execute_filter(ctx, [['v', 'amplify', 'radius={}'.format(radius)]])
+        await video_creator.apply_filters_and_send(ctx, self._amplify, {'radius':radius})
     
+
+    async def _cartoony(self, ctx, vstream, astream, kwargs):
+        vstream = vstream.filter('edgedetect', low=0.1, high=0.3, mode='colormix')
+        return vstream, astream, {}
     @commands.command(description='Make stuff look kinda cartoony', pass_context=True)
     async def cartoony(self, ctx):
-        await self.execute_filter(ctx, [['v', 'edgedetect', 'low=0.1 high=0.3 mode=colormix']])
+        await video_creator.apply_filters_and_send(ctx, self._cartoony, {})
+    @commands.command(description='Make stuff look kinda cartoony', pass_context=True)
+    async def cartoon(self, ctx):
+        await self.cartoony(ctx)
+
     
+    async def _negate(self, ctx, vstream, astream, kwargs):
+        vstream = vstream.filter('negate')
+        return vstream, astream, {}
+    @commands.command(description='Invert the colors', pass_context=True)
+    async def negate(self, ctx):
+        await video_creator.apply_filters_and_send(ctx, self._negate, {})
     @commands.command(description='Invert the colors', pass_context=True)
     async def invert(self, ctx):
-        await self.execute_filter(ctx, [['v', 'negate', 'negate_alpha=0']])
+        await self.negate(ctx)
+    @commands.command(description='Invert the colors', pass_context=True)
+    async def negative(self, ctx):
+        await self.negate(ctx)
+    @commands.command(description='Invert the colors', pass_context=True)
+    async def inverse(self, ctx):
+        await self.negate(ctx)
     
-    @commands.command(description='18-band equalizer. you can pass how high or low you want each band to be, or set to -1 to make it random.', pass_context=True)
+
+    async def _equalizer(self, ctx, vstream, astream, kwargs):
+        astream = astream.filter('superequalizer', **kwargs)
+        return vstream, astream, {}
+    @commands.command(description='18-band equalizer. You can provide 18 numbers for each frequency band. Not setting a number, or setting a number to -1, randomizes it.', pass_context=True)
     async def equalizer(self, ctx, b1=-1, b2=-1, b3=-1, b4=-1, b5=-1, b6=-1, b7=-1, b8=-1, b9=-1, b10=-1, b11=-1, b12=-1, b13=-1, b14=-1, b15=-1, b16=-1, b17=-1, b18=-1):
         b = [b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15, b16, b17, b18]
+        b_dict = {}
         for i in range(len(b)):
+            arg_name = f'{i+1}b'
             if(b[i] == -1):
-                b[i] = random.uniform(0, 20)
+                b_dict[arg_name] = random.uniform(0, 20)
+            else:
+                b_dict[arg_name] = b[i]
 
-        await self.execute_filter(ctx, [['a', 'superequalizer', '1b={} 2b={} 3b={} 4b={} 5b={} 6b={} 7b={} 8b={} 9b={} 10b={} 11b={} 12b={} 13b={} 14b={} 15b={} 16b={} 17b={} 18b={}'.format(
-            b[0], b[1], b[2], b[3], b[4], b[5], b[6], b[7], b[8], b[9], b[10], b[11], b[12], b[13], b[14], b[15], b[16], b[17]
-        )]])
+        await video_creator.apply_filters_and_send(ctx, self._equalizer, b_dict)
     
+
+    async def _trim(self, ctx, vstream, astream, kwargs):
+        start = kwargs['start']
+        end = kwargs['end']
+
+        trim_kwargs = {}
+        if(start is not None):
+            trim_kwargs['start'] = start
+        if(end is not None):
+            trim_kwargs['end'] = end
+            
+        vstream = vstream.filter('trim', **trim_kwargs).filter('setpts', expr='PTS-STARTPTS')
+        astream = astream.filter('atrim', **trim_kwargs).filter('asetpts', expr='PTS-STARTPTS')
+        return (vstream, astream, {})
+    @commands.command(description='Trim the start/end of a video. Example: !trim 0:13 1:27.3 to trim off anything before 13 seconds and after 1 minute and 27.3 seconds. You can also use start and end (examples: !trim start 1:27.3 and !trim 0:13 end)')
+    async def trim(self, ctx, start : str = 'start', end : str = 'end'):
+        if(re.match(r'(start|[0-9]\:[0-9][0-9](\.[0-9]+)?)', start) is None and re.match(r'(end|[0-9]\:[0-9][0-9](\.[0-9]+)?)', end) is None):
+            return
+        if(start == 'start' and end == 'end'):
+            return
+
+        # Create timestamps (None for start/end of video)
+        if(start == 'start'):
+            start = None
+        else:
+            start = '00:0' + start
+
+        if(end == 'end'):
+            end = None
+        else:
+            end = '00:0' + end
+
+        await video_creator.apply_filters_and_send(ctx, self._trim, {'start':start, 'end':end})
+    
+
+    async def _concat(self, ctx, vstream, astream, kwargs):
+        first_stream = ffmpeg.input(kwargs['first_vid_filepath'])
+        vfirst = (
+            first_stream.video
+            .filter('scale', w=640, h=480)
+            .filter('setsar', r='1:1')
+        )
+        afirst = first_stream.audio
+        
+        vstream = (
+            vstream
+            .filter('scale', w=640, h=480)
+            .filter('setsar', r='1:1')
+        )
+
+        joined = ffmpeg.concat(vfirst, afirst, vstream, astream, v=1, a=1).node
+        return (joined[0], joined[1], {'vsync':0})
+    @commands.command(description='Play the last two videos side by side. The most recent video will be played after the second to most recent.')
+    async def concat(self, ctx):
+        first_vid_filepath, is_yt, result = await image_cache.download_nth_video(ctx, 1)
+        if(not result):
+            return
+        await video_creator.apply_filters_and_send(ctx, self._concat, {'first_vid_filepath':first_vid_filepath})
+        if(os.path.isfile(first_vid_filepath)):
+            os.remove(first_vid_filepath)
+    @commands.command(description='Play the last two videos side by side. The most recent video will be played after the second to most recent.')
+    async def merge(self, ctx):
+        await self.concat(ctx)
+
+
+    async def _demonize(self, ctx, vstream, astream, kwargs):
+        astream = astream.filter('chorus', delays='80ms', decays=1, speeds=20, depths=4)
+        vstream = (
+            vstream
+            .filter('amplify', radius=4)
+            .filter('lagfun', decay=0.95)
+            .filter('amplify', radius=2)
+        )
+        return vstream, astream, {'fs':'4M'}
     @commands.command(description='No description needed.', pass_context=True)
     async def demonize(self, ctx):
-        effects = []
-        #effects.append(['a', 'asetrate', 'r=44100*0.5'])
-        #effects.append(['a', 'atempo', 'tempo=2'])
-        effects.append(['a', 'chorus', 'delays=80ms decays=1 speeds=20 depths=4'])
-        effects.append(['v', 'amplify', 'radius=4'])
-        effects.append(['v', 'lagfun', 'decay=0.95'])
-        effects.append(['v', 'amplify', 'radius=2'])
-        effects.append(['v', 'amplify', 'radius=6'])
-        await self.execute_filter(ctx, effects)
-    
-    @commands.command(description="Apply a bunch of random effects. Provide a number if you want a specific amount of effects, otherwise it's random. Say 'unique' after the number if you don't want to repeat effects.")
-    async def randomize(self, ctx, effect_amount: int = -1, is_unique: str = ""):
-        if(effect_amount == -1):
-            effect_amount = random.randint(3, 10)
-        effect_amount = min(40, max(1, effect_amount))
-        effects = []
-
-        is_unique = True if is_unique == 'unique' else random.choice([True, False])
-        used = set()
-
-        for i in range(effect_amount):
-            random_catalog = self.get_randomized_catalog()
-
-            effect_and_category = None
-            if(is_unique):
-                while(effect_and_category is None or effect_and_category in used):
-                    if(len(used) == len(random_catalog)):
-                        used = set()
-                    effect_and_category = random.choice(list(random_catalog))
-                used.add(effect_and_category)
-            else:
-                effect_and_category = random.choice(list(random_catalog))
-
-            effect_category, effect = effect_and_category.split(' ')
-            effect_params = random_catalog[effect_category + ' ' + effect]
-
-            if(type(effect_params) == list):
-                effect_params = random.choice(effect_params)
-            
-            effects.append([effect_category, effect, effect_params])
-
-        print("is unique? " + str(is_unique))
-        for eff in effects:
-            print(eff)
-        await self.execute_filter(ctx, effects)
+        await video_creator.apply_filters_and_send(ctx, self._demonize, {})
 
 
+    async def _backwards(self, ctx, vstream, astream, kwargs):
+        vstream = ffmpeg.filter(vstream, 'reverse')
+        astream = ffmpeg.filter(astream, 'areverse')
+        return (vstream, astream, {})
     @commands.command(description="Reverse the video.")
     async def backwards(self, ctx):
-        input_vid, is_yt, result = await image_cache.download_last_video(ctx)
-        if(not result):
-            await ctx.send("Error downloading the video")
-            return
-        
-        async with ctx.typing():
-            try:
-                input_stream = ffmpeg.input(input_vid)
-                video_stream = input_stream.video
-                audio_stream = input_stream.audio
-
-                video_stream = ffmpeg.filter(video_stream, 'reverse')
-                audio_stream = ffmpeg.filter(audio_stream, 'areverse')
-                (
-                    ffmpeg
-                    .output(audio_stream, video_stream, 'vids/out.mp4', fs='7M')
-                    .run(cmd='ffmpeg4-2-2/ffmpeg', overwrite_output=True)
-                )
-                await ctx.send(file=discord.File('vids/out.mp4'))
-            except TimeoutError as e:
-                await ctx.send('Command took to long to execute.\n```\n' + str(e) + '```')
-            except Exception as e:
-                await ctx.send('Error:\n```\n' + str(e) + '```')
-                print(traceback.format_exc())
-            if(is_yt):
-                os.remove(input_vid)
+        await video_creator.apply_filters_and_send(ctx, self._backwards, {})
     
 
-    @commands.command(description="Speed the video.")
+    async def _speed(self, ctx, vstream, astream, kwargs):
+        speed_change = kwargs['speed_change']
+        if(speed_change >= 0.5):
+            vstream = vstream.filter('setpts', f'{1.0/speed_change}*PTS')
+            astream = astream.filter('atempo', speed_change)
+        else:
+            current_speed = 1.0
+            while(current_speed >= speed_change):
+                if(current_speed * 0.5 <= speed_change):
+                    vstream = vstream.filter('setpts', f'{current_speed/speed_change}*PTS')
+                    astream = astream.filter('atempo', speed_change/current_speed)
+                    break
+                vstream = vstream.filter('setpts', '2*PTS')
+                astream = astream.filter('atempo', 0.5)
+                current_speed *= 0.5
+        return (vstream, astream, {})
+    @commands.command(description="Make the video faster or slower.")
     async def speed(self, ctx, speed_change : float = 2.0):
-        input_vid, is_yt, result = await image_cache.download_last_video(ctx)
-        if(not result):
-            await ctx.send("Error downloading the video")
-            return
-        
         speed_change = max(0.05, speed_change)
-
-        async with ctx.typing():
-            try:
-                input_stream = ffmpeg.input(input_vid)
-                video_stream = input_stream.video
-                audio_stream = input_stream.audio
-
-                # No issues if we need to change speed by 0.5
-                if(speed_change >= 0.5):
-                    video_stream = ffmpeg.filter(video_stream, 'setpts', str(1.0/speed_change)+'*PTS')
-                    audio_stream = ffmpeg.filter(audio_stream, 'atempo', speed_change)
-                # But decreasing by <0.5 doesn't work, so several speed changes are needed
-                else:
-                    current_speed = 1.0
-                    while(current_speed >= speed_change):
-                        if(current_speed * 0.5 <= speed_change):
-                            video_stream = ffmpeg.filter(video_stream, 'setpts', str(1.0/(speed_change/current_speed))+'*PTS')
-                            audio_stream = ffmpeg.filter(audio_stream, 'atempo', speed_change/current_speed)
-                            break
-                        video_stream = ffmpeg.filter(video_stream, 'setpts', str(2.0)+'*PTS')
-                        audio_stream = ffmpeg.filter(audio_stream, 'atempo', 0.5)
-                        current_speed *= 0.5
-
-                (
-                    ffmpeg
-                    .output(audio_stream, video_stream, 'vids/out.mp4', fs='7M')
-                    .run(cmd='ffmpeg4-2-2/ffmpeg', overwrite_output=True)
-                )
-                await ctx.send(file=discord.File('vids/out.mp4'))
-            except TimeoutError as e:
-                await ctx.send('Command took to long to execute.\n```\n' + str(e) + '```')
-            except Exception as e:
-                await ctx.send('Error:\n```\n' + str(e) + '```')
-                print(traceback.format_exc())
-            if(is_yt):
-                os.remove(input_vid)
-
+        await video_creator.apply_filters_and_send(ctx, self._speed, {'speed_change': speed_change})
     
 
-    @commands.command(description="loop the video.")
+    async def _loop(self, ctx, vstream, astream, kwargs):
+        amount = kwargs['amount']
+        loop_streams = [vstream, astream]
+        for i in range(amount - 1):
+            loop_streams = ffmpeg.concat(loop_streams[0], loop_streams[1], vstream, astream, v=1, a=1).node
+        return (loop_streams[0], loop_streams[1], {})
+    @commands.command(description="Loop the video.")
     async def loop(self, ctx, amount : int = 2):
-        input_vid, is_yt, result = await image_cache.download_last_video(ctx)
-        if(not result):
-            await ctx.send("Error downloading the video")
-            return
-        
         amount = max(2, min(20, amount))
+        await video_creator.apply_filters_and_send(ctx, self._loop, {'amount': amount})
+    
 
-        async with ctx.typing():
-            try:
-                input_stream = ffmpeg.input(input_vid)
-                joined_stream = [input_stream.video, input_stream.audio]
+    async def _pingpong(self, ctx, vstream, astream, kwargs):
+        pingpong_stream = ffmpeg.concat(vstream, astream, vstream.filter('reverse'), astream.filter('areverse'), v=1, a=1).split()
+        return (pingpong_stream[0], pingpong_stream[1], {})
+    @commands.command(description="Plays the video, then plays it in reverse.")
+    async def pingpong(self, ctx):
+        await video_creator.apply_filters_and_send(ctx, self._pingpong, {})
 
-                for i in range(amount - 1):
-                    #video_stream = ffmpeg.concat(video_stream, input_stream)
-                    joined_stream = ffmpeg.concat(joined_stream[0], joined_stream[1], input_stream.video, input_stream.audio, v=1, a=1).node
-
-                (
-                    ffmpeg
-                    .output(joined_stream[0], joined_stream[1], 'vids/out.mp4', fs='7M')
-                    .run(cmd='ffmpeg4-2-2/ffmpeg', overwrite_output=True)
-                )
-                await ctx.send(file=discord.File('vids/out.mp4'))
-            except TimeoutError as e:
-                await ctx.send('Command took to long to execute.\n```\n' + str(e) + '```')
-            except Exception as e:
-                await ctx.send('Error:\n```\n' + str(e) + '```')
-                print(traceback.format_exc())
-            if(is_yt):
-                os.remove(input_vid)
 
     
 
             
 
 
-    @commands.command(description="Apply any video filter that's in ffmpeg 4.2.2. If you are doing a multi-input filter, replace v|a with the last n videos you need to use. Format: !filter v|a|last_n_vids last_n_vids filter_name arg1=0.5 arg2=1.1")
+    @commands.command(description="Apply any video filter that's in ffmpeg 4.2.2. If you are doing a multi-input filter, replace v|a with the last n videos you need to use. Format: !filter v|a|last_n_vids filter_name arg1=0.5 arg2=1.1")
     async def filter(self, ctx, filter_type, filter_name, *, arg_list : str = None):
         if((arg_list is None and not (filter_name == 'reverse' or filter_name == 'areverse' or filter_name == 'earwax'))):
             return
         await self.execute_filter(ctx, [[filter_type, filter_name, arg_list]])
     
-
-
-
-
-
-
-
     # Run filters
     # effects: [[filter_type, filter_name, param_list], ...]
     async def execute_filter(self, ctx, effects):
@@ -678,8 +711,6 @@ class Filter(commands.Cog):
         else:
             out_filename += 'mp4'
 
-        #await ctx.send("I will get back to you...")
-        #print('\nI will get back to you...\n')
         async with ctx.typing():
             try:
                 input_vid = input_vids[0]
@@ -706,7 +737,6 @@ class Filter(commands.Cog):
                         param = param.split('=')
                         param_dict[param[0]] = param[1]
 
-                    #if(filter_type in 'va'):
                     if(input_count == 1):
                         # Do audio stuff
                         if(filter_type == 'a'):
@@ -719,16 +749,6 @@ class Filter(commands.Cog):
                         out_stream = ffmpeg.output(v, a, out_filename, fs='7M')
                     else:
                         # Do multi-input video stuff
-                        #input_count = int(filter_type)
-                        #input_vids = []
-                        #for i in range(input_count):
-                        #    input_vids.append(image_cache.get_from_cache(str(ctx.message.channel.id))[-(i+1)])
-                        '''
-                        for i in range(len(input_vids)):
-                            input_vids[i] = ffmpeg.input(input_vids[i])
-                        out_stream = ffmpeg.filter(input_vids, filter_name, **param_dict)
-                        out_stream = out_stream.output(out_filename)
-                        '''
                         in_streams = []
                         in_streams_a = []
                         in_streams_v = []

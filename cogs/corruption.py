@@ -13,6 +13,7 @@ import re
 import os
 import ffmpeg
 import traceback
+import video_creator
 
 class TimeoutError(Exception):
     pass
@@ -25,273 +26,154 @@ class Corruption(commands.Cog):
         self.bot = bot
         self.use_yt = False
     
-    @commands.command(description='Corrupt the bytes in the video.\ncorrupt_ratio = how much of video to corrupt (0.95 is good, that means the 95 percent chunk in the middle).\ncorrupt_chance = chance of corrupting a byte (0.2 is good, means 20 percent chance).\nbyte_skip = how far apart every corrupted byte is (200 is good, means every 200th byte, asssuming corrupt_chance=1)', pass_context=True)
-    async def corrupt(self, ctx, corrupt_ratio: float=-1, corrupt_chance: float=-1, byte_skip: int=-1):
-        corrupt_ratio = random.uniform(0.94, 0.97) if corrupt_ratio == -1 else max(0, min(1, corrupt_ratio))
-        corrupt_chance = random.random() if corrupt_chance == -1 else max(0, min(1, corrupt_chance))
-        byte_skip = random.randint(10, 2500) if byte_skip == -1 else max(10, byte_skip)
+    def get_corrupt_start_end(self, filesize):
+        return (int(random.uniform(0.03, 0.05) * filesize), int(random.uniform(0.95, 0.97) * filesize))
 
-        input_vid, is_yt, result = await image_cache.download_last_video(ctx)
-        if(not result):
-            await ctx.send("Error downloading the video")
-            return
-        
-        #out_filename = 'vids/out.mp4'
+    async def _tomato(self, filename, args, suffix):
+        p = Popen(f'python3 ./tomato.py -i {filename} {args}', bufsize=2048, shell=True, stdin=subprocess.PIPE)
+        p.wait()
+        os.remove(filename)
+        os.rename(f'{filename.split(".avi")[0]}{suffix}.avi', filename)
+    
 
-        #await ctx.send("I will get back to you...")
-        async with ctx.typing():
-            try:
-                # convert to avi
-                avipath = 'vids/corrupt.avi'
-                (
-                    ffmpeg
-                    .input(input_vid)
-                    .output(avipath)
-                    .run(cmd='ffmpeg4-2-2/ffmpeg', overwrite_output=True)
-                )
-                
-                # screw it all up
-                corrupt_start = int(os.path.getsize(avipath) * (1-corrupt_ratio))
-                corrupt_end = int(os.path.getsize(avipath) * corrupt_ratio)
-                corrupt_pos = int(corrupt_start)
-                ogFile = open(avipath, 'r+b')
-                while(corrupt_pos < corrupt_end):
-                    ogFile.seek(corrupt_pos)
-                    
-                    corrupt_subpos = 0
-                    iter_counter = 10
-                    while(random.random() < corrupt_chance and iter_counter > 0):
-                        ogFile.write(bytes([random.randint(0, 255)]))
-                        corrupt_subpos += random.randint(1, 10)
-                        iter_counter -= 1
-                        ogFile.seek(corrupt_pos + corrupt_subpos)
-                    
-                    corrupt_pos += byte_skip
-                ogFile.close()
-                
-                # back to mp4
-                (
-                    ffmpeg
-                    .input(avipath)
-                    .output('vids/out.mp4', fs='7M')
-                    .run(cmd='ffmpeg4-2-2/ffmpeg', overwrite_output=True)
-                )
-                await ctx.send(file=discord.File('vids/out.mp4'))
-                print("ratio: " + str(corrupt_ratio) + " | chance: " + str(corrupt_chance) + " | byte_skip: " + str(byte_skip))
+    async def _mosh(self, ctx, filename, kwargs):
+        await self._tomato(filename, '', '-void')
+    @commands.command(description='Datamoshing. Provide a number to change quality (lowest/default = 1.5). Provide another number to change output resolution width (default = 640)', pass_context=True)
+    async def mosh(self, ctx):
+        await video_creator.apply_corruption_and_send(ctx, self._mosh, {})
+    
 
-            except TimeoutError as e:
-                await ctx.send('Command took to long to execute.\n```\n' + str(e) + '```')
-            except Exception as e:
-                await ctx.send('Error:\n```\n' + str(e) + '```')
-                print(traceback.format_exc())
-            if(is_yt):
-                os.remove(input_vid)
+    async def _smear(self, ctx, filename, kwargs):
+        await self._tomato(filename, '-m pulse -c 5', '-pulse-c5')
+    @commands.command(description='Corrupt the video by smearing moving things around.')
+    async def smear(self, ctx):
+        await video_creator.apply_corruption_and_send(ctx, self._smear, {})
+
+
+    async def _corrupt(self, ctx, filename, kwargs):
+        fs = open(filename, 'r+b')
+        filesize = os.path.getsize(filename)
+        corrupt_start, corrupt_end = self.get_corrupt_start_end(filesize)
+        intensity = kwargs['intensity']
+        corrupt_pos = corrupt_start
+
+        while(corrupt_pos < corrupt_end):
+            fs.seek(corrupt_pos)
+            # Corrupt a chunk of nearby bytes
+            iters_intensity = int(intensity*200)
+            max_iters = random.randint(int(iters_intensity * 0.1), iters_intensity)
+            for i in range(max_iters):
+                fs.write(bytes([random.randint(0, 255)]))
+                corrupt_pos += random.randint(1, 10)
+                fs.seek(corrupt_pos)
+            # Find a new chunk to corrupt
+            seek_intensity = int((1-intensity**2)*10000 + intensity * 4000)
+            corrupt_pos += random.randint(int(seek_intensity*0.05), seek_intensity)
+        fs.close()
+    @commands.command(description='Corrupt the bytes in the video.)', pass_context=True)
+    async def corrupt(self, ctx, intensity: float = 0.5):
+        intensity = max(0, min(1, intensity))
+        await video_creator.apply_corruption_and_send(ctx, self._corrupt, {'intensity':intensity})
+
+
+
+
+    async def _rearrange(self, ctx, filename, kwargs):
+        fs = open(filename, 'r+b')
+        filesize = os.path.getsize(filename)
+        corrupt_start, corrupt_end = self.get_corrupt_start_end(filesize)
+        intensity = kwargs['intensity']
+        max_chunk_length = int(filesize * 0.3 * intensity)
+
+        for i in range(int(intensity*50)):
+            chunk_length = random.randint(1000, max_chunk_length)
+            chunk1_start = random.randint(corrupt_start, corrupt_end - chunk_length)
+            chunk2_start = None
+            # Keep looping if chunk2 is in a spot that would collide with chunk1
+            max_iters = 25 # in case there's an infinite loop...
+            while(chunk2_start is None or (chunk2_start > chunk1_start - chunk_length and chunk2_start < chunk1_start + chunk_length)):
+                if(max_iters <= 0):
+                    break
+                chunk2_start = random.randint(corrupt_start, corrupt_end - chunk_length)
+                max_iters -= 1
+            if(max_iters <= 0):
+                continue
+
+            # Chunk 1
+            fs.seek(chunk1_start)
+            chunk1 = fs.read(chunk_length)
+            # Chunk 2
+            fs.seek(chunk2_start)
+            chunk2 = fs.read(chunk_length)
+
+            # Get the areas in between the chunks
+            first_chunk_start = min(chunk1_start, chunk2_start)
+            first_chunk_end = first_chunk_start + chunk_length
+            second_chunk_start = max(chunk1_start, chunk2_start)
+            second_chunk_end = second_chunk_start + chunk_length
+            fs.seek(0)
+            segment1 = fs.read(first_chunk_start)
+            fs.seek(first_chunk_end)
+            segment2 = fs.read(second_chunk_start - first_chunk_end)
+            fs.seek(second_chunk_end)
+            segment3 = fs.read()
+
+            # Combine it all and write to file
+            if(chunk1_start < chunk2_start):
+                temp = chunk1
+                chunk1 = chunk2
+                chunk2 = temp
+            fs.seek(0)
+            fs.write(segment1 + chunk1 + segment2 + chunk2 + segment3)
+
+        fs.close()
+    @commands.command(description='Corrupt the video by swapping random chunks of its file.', pass_context=True)
+    async def rearrange(self, ctx, intensity : float = 0.5):
+        intensity = max(0, min(1, intensity))
+        await video_creator.apply_corruption_and_send(ctx, self._rearrange, {'intensity':intensity})
     
 
 
 
+    async def _stutter(self, ctx, filename, kwargs):
+        temp_filename = f'{filename}2'
+        fs = open(filename, 'r+b')
+        filesize = os.path.getsize(filename)
+        corrupt_start, corrupt_end = self.get_corrupt_start_end(filesize)
+        corrupt_pos = corrupt_start + random.randint(0, 8000)
 
-    @commands.command(description='Corrupt the video by repeating a chunk', pass_context=True)
-    async def rearrange(self, ctx, corrupt_ratio: float=-1):
-        corrupt_ratio = random.uniform(0.95, 0.97) if corrupt_ratio == -1 else max(0, min(1, corrupt_ratio))
+        # Duplicate the file
+        fs_copy = open(temp_filename, 'wb')
+        fs.seek(0)
+        fs_copy.write(fs.read())
+        fs_copy.close()
+        fs_copy = open(temp_filename, 'rb')
 
-        input_vid, is_yt, result = await image_cache.download_last_video(ctx)
-        if(not result):
-            await ctx.send("Error downloading the video")
-            return
-        
-        #await ctx.send("I will get back to you...")
-        async with ctx.typing():
-            try:
-                # convert to avi
-                avipath = 'vids/corrupt.avi'
-                (
-                    ffmpeg
-                    .input(input_vid)
-                    .output(avipath)
-                    .run(cmd='ffmpeg4-2-2/ffmpeg', overwrite_output=True)
-                )
-                
-                # rearrange all the bytes
-                #corrupt_start = int(os.path.getsize(avipath) * (1-loop_pos))
-                #corrupt_end = int(os.path.getsize(avipath) * loop_pos)
-                fh = open(avipath, 'r+b')
+        # Write the file header
+        fs.seek(0)
+        fs.write(fs_copy.read(corrupt_pos))
+        fs_copy.seek(corrupt_pos)
 
-                for i in range(random.randint(10, 50)):
-                    insertion_start = int(os.path.getsize(avipath) * random.uniform(0.05, 0.95))
-                    extraction_start = int(os.path.getsize(avipath) * random.uniform(0.05, 0.85))
-                    extraction_length = random.randint(1000, min(int(os.path.getsize(avipath) * 0.1), 50000))
+        # Repeat bytes at the beginning of every chunk
+        while(corrupt_pos < corrupt_end):
+            # Repeating bytes
+            for i in range(random.randint(1, 100)):
+                fs.write(fs_copy.read(random.randint(300, 1500)))
+                fs_copy.seek(corrupt_pos)
+            # Seeking next chunk
+            byte_skip = random.randint(1000, 10000)
+            fs.write(fs_copy.read(byte_skip))
+            corrupt_pos += byte_skip
+            fs_copy.seek(byte_skip)
+        fs.write(fs_copy.read())
 
-                    # Start of video
-                    fh.seek(0)
-                    start_segment = fh.read(insertion_start)
+        fs_copy.close()
+        fs.close()
 
-                    # Middle of video
-                    fh.seek(extraction_start)
-                    mid_segment = fh.read(extraction_length)
-
-                    # End of video
-                    fh.seek(insertion_start)
-                    end_segment = fh.read()
-
-                    # Put it all together
-                    fh.seek(0)
-                    fh.write(start_segment + mid_segment + end_segment)
-
-                fh.close()
-                
-                # back to mp4
-                (
-                    ffmpeg
-                    .input(avipath)
-                    .output('vids/out.mp4', fs='7M')
-                    .run(cmd='ffmpeg4-2-2/ffmpeg', overwrite_output=True)
-                )
-                await ctx.send(file=discord.File('vids/out.mp4'))
-            except TimeoutError as e:
-                await ctx.send('Command took to long to execute.\n```\n' + str(e) + '```')
-            except Exception as e:
-                await ctx.send('Error:\n```\n' + str(e) + '```')
-                print(traceback.format_exc())
-            if(is_yt):
-                os.remove(input_vid)
-
-
-
-
-
-    @commands.command(description='Make the video stutter a lot', pass_context=True)
-    async def stutter(self, ctx, corrupt_ratio: float=-1):
-        corrupt_ratio = random.uniform(0.95, 0.96) if corrupt_ratio == -1 else max(0, min(1, corrupt_ratio))
-
-        input_vid, is_yt, result = await image_cache.download_last_video(ctx)
-        if(not result):
-            await ctx.send("Error downloading the video")
-            return
-        
-        #await ctx.send("I will get back to you...")
-        async with ctx.typing():
-            try:
-                # convert to avi
-                avipath = 'vids/corrupt.avi'
-                tempavipath = 'vids/corrupttemp.avi'
-                (
-                    ffmpeg
-                    .input(input_vid)
-                    .output(tempavipath)
-                    .run(cmd='ffmpeg4-2-2/ffmpeg', overwrite_output=True)
-                )
-                
-                # repeat a bunch of bytes
-                fi = open(tempavipath, 'rb')
-                fo = open(avipath, 'wb')
-
-                corrupt_start = int(os.path.getsize(tempavipath) * (1-corrupt_ratio))
-                corrupt_end = int(os.path.getsize(tempavipath) * corrupt_ratio)
-                seek_pos = corrupt_start + random.randint(0, 8000)
-
-                fo.seek(0)
-                fo.write(fi.read(corrupt_start)) # write the file header
-                fi.seek(seek_pos)
-                
-                while(seek_pos < corrupt_end):
-                    
-                    for i in range(random.randint(1, 80)):
-                        fo.write(fi.read(random.randint(300,1500)))
-                        fi.seek(seek_pos)
-                    
-                    normal_seg_len = random.randint(1000, 10000)
-                    fo.write(fi.read(normal_seg_len))
-                    seek_pos += normal_seg_len
-                    fi.seek(seek_pos)
-                fo.write(fi.read())
-
-                fi.close()
-                fo.close()
-                
-                # back to mp4
-                (
-                    ffmpeg
-                    .input(avipath)
-                    .output('vids/out.mp4', fs='7M')
-                    .run(cmd='ffmpeg4-2-2/ffmpeg', overwrite_output=True)
-                )
-                await ctx.send(file=discord.File('vids/out.mp4'))
-            except TimeoutError as e:
-                await ctx.send('Command took to long to execute.\n```\n' + str(e) + '```')
-            except Exception as e:
-                await ctx.send('Error:\n```\n' + str(e) + '```')
-                print(traceback.format_exc())
-            if(is_yt):
-                os.remove(input_vid)
-    
-    
-
-
-    @commands.command(description='Add 1 to a bunch of random bytes', pass_context=True)
-    async def corruptadd(self, ctx, corrupt_ratio: float=-1):
-        corrupt_ratio = random.uniform(0.95, 0.97) if corrupt_ratio == -1 else max(0, min(1, corrupt_ratio))
-
-        input_vid, is_yt, result = await image_cache.download_last_video(ctx)
-        if(not result):
-            await ctx.send("Error downloading the video")
-            return
-        
-        #await ctx.send("I will get back to you...")
-        async with ctx.typing():
-            try:
-                # convert to avi
-                avipath = 'vids/corrupt.avi'
-                (
-                    ffmpeg
-                    .input(input_vid)
-                    .output(avipath)
-                    .run(cmd='ffmpeg4-2-2/ffmpeg', overwrite_output=True)
-                )
-                
-                # rearrange all the bytes
-                #corrupt_start = int(os.path.getsize(avipath) * (1-loop_pos))
-                #corrupt_end = int(os.path.getsize(avipath) * loop_pos)
-                filesize = os.path.getsize(avipath)
-                fh = open(avipath, 'r+b')
-
-                for i in range(random.randint(10, 10000)):
-                    pos = int(filesize * random.uniform(0.05, 0.95))
-                    fh.seek(pos)
-                    for j in range(random.randint(2, 1000)):
-                        curr = fh.read(1)
-                        fh.seek(pos)
-                        fh.write(bytes([min(255, int.from_bytes(curr, 'little') + 1)]))
-
-                fh.close()
-                
-                # back to mp4
-                (
-                    ffmpeg
-                    .input(avipath)
-                    .output('vids/out.mp4', fs='7M')
-                    .run(cmd='ffmpeg4-2-2/ffmpeg', overwrite_output=True)
-                )
-                await ctx.send(file=discord.File('vids/out.mp4'))
-            except TimeoutError as e:
-                await ctx.send('Command took to long to execute.\n```\n' + str(e) + '```')
-            except Exception as e:
-                await ctx.send('Error:\n```\n' + str(e) + '```')
-                print(traceback.format_exc())
-            if(is_yt):
-                os.remove(input_vid)
-
-    
-
-    
-
-
-        
-
-        
-    
-    
-
+        os.remove(temp_filename)
+    @commands.command(description='Make the video stutter a lot')
+    async def stutter(self, ctx):
+        await video_creator.apply_corruption_and_send(ctx, self._stutter, {})
 
 
         

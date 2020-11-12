@@ -12,6 +12,3 @@ def is_owner():
     def predicate(ctx):
         return str(ctx.message.author.id) in data['owners']
     return commands.check(predicate)
-
-def get_yandex_translate_key():
-    return data['yandex-translate']

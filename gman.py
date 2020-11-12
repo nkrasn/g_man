@@ -6,11 +6,18 @@ import bot_info
 import sys
 import image_cache
 import re
+import os
 import traceback
 
-#extensions = ['general', 'survey', 'music_player', 'games', 'git', 'corruption', 'translate', 'magic8ball']
+
+# If any videos were not deleted while the bot was last up, remove them
+vid_files = [f for f in os.listdir('vids') if os.path.isfile(os.path.join('vids', f))]
+for f in vid_files:
+    os.remove(f'vids/{f}')
+
+
 extensions = ['cogs.bitrate', 'cogs.filter', 'cogs.fun', 'cogs.corruption']
-bot = commands.Bot(command_prefix=commands.when_mentioned_or('!'), description='Here you go! All my commands!')
+bot = commands.Bot(command_prefix=commands.when_mentioned_or('!'), description='Upload a video or paste a discord/youtube/twitter link, then run a command!\nFilters powered by FFMPEG, mosh and smear commands run by tomato.py (https://github.com/itsKaspar/tomato).')
 
 # Loads extensions, returns string saying what reloaded
 def reload_extensions(exs):
@@ -35,17 +42,13 @@ async def on_ready():
     print(bot.user.name)
     print(bot.user.id)
     print('------')
-    #await bot.change_presence(game=discord.Game(name='Dreams Beta'))
     global extensions
-    #extensions = map(lambda ex: "cogs." + ex, extensions) # GET IT ITS A HALF LIFE REFERENCE
     print(reload_extensions(extensions))
 
 # Process commands
 @bot.event
 async def on_message(message):
-    #if(len(message.attachments) == 0):
-    #    return
-    #channel_id = message.channel.id
+    # Adding URLs to the cache
     if(len(message.attachments) > 0):
         msg_url = message.attachments[0].url
         if(msg_url.split('.')[-1] in image_cache.approved_filetypes):
