@@ -15,12 +15,6 @@ import ffmpeg
 import traceback
 import video_creator
 
-class TimeoutError(Exception):
-    pass
-
-def interrupt(a, b):
-    raise TimeoutError()
-
 class Corruption(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
