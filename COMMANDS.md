@@ -24,7 +24,7 @@ Example: `!saturate 5` can also be sent as `!saturation 5`<br><br>
 | gamma | `!gamma <amount>` | `0.1 to 10` | Change the video's gamma. | `!gamma 1.2` |
 | hue | `!hue <degrees>` | `-inf to inf` | Change the video's hue. | `!hue 180` |
 | invert<br>inverse<br>negate<br>negative | `!invert` | | Invert the video's colors. | `!invert` |
-| lagfun | `!lagfun <amount>` | `0 to 1` | Makes darker pixels update slower. This can create an interesting smearing effect with lighter pixels. A higher \<amount\> makes the smearing last longer, with a value of 1 causing bright colors to never disappear. Values close to 0.96 very noticable results. | `!lagfun 0.99` |
+| lagfun | `!lagfun <amount>` | `0 to 1` | Makes darker pixels update slower. This can create an interesting smearing effect with lighter pixels. A higher \<amount\> makes the smearing last longer, with a value of 1 causing bright colors to never disappear. Values close to 0.96 create very noticable results. | `!lagfun 0.99` |
 | loop | `!loop <amount>` | `2 to 20` | Loop the video. | `!loop 5` |
 | saturate<br>saturation | `!saturate <amount>` | `-10 to 10` | Saturate the video. | `!saturate 2` |
 | scale | `!scale <width> <height>` | `50 to 1240` | Scale the video. You can maintain aspect ratio by setting \<width\> or \<height\> to auto. By default, \<width\>=360 and \<height\>=270. | `!scale 640 auto` |
@@ -53,8 +53,8 @@ Example: `!saturate 5` can also be sent as `!saturation 5`<br><br>
 | ifunny | `!ifunny` | | Add an iFunny watermark. | `!ifunny` |
 | pingpong | `!pingpong` | | Plays the video, then plays it in reverse. | `!pingpong` |
 | rainbow | `!rainbow <speed>` | `-inf to inf` | Makes the hue change over time, creating a rainbow effect. By default it's 360 degrees per second, you can multiply this speed by \<speed\>. | `!rainbow 2` |
-| text | `!text <top_text>|<bottom_text>` | | Adds captions to the top and bottom of the video. You separate \<top_text\> and \<bottom_text\> with a pipe symbol `|`. | `!text this will be on top|and this will be on the bottom`<br><br>`!text this will only be on top`<br><br>`!text |this will only be on the bottom` |
-| tutorial | `!tutorial <top_text>|<bottom_text>` | | Converts the video into an old-school YouTube tutorial made with Windows Movie Maker. You can customize the title screen's \<top_text\> and \<bottom_text\> the same way you would with the !text command. If no top text is provided, a randomized title is chosen. If no bottom text is provided, "By your_username" is chosen. | `!tutorial how to download google chrome|working 2010` |
+| text | `!text <top_text>\|<bottom_text>` | | Adds captions to the top and bottom of the video. You separate \<top_text\> and \<bottom_text\> with a pipe symbol `\|`. | `!text this will be on top\|and this will be on the bottom`<br><br>`!text this will only be on top`<br><br>`!text \|this will only be on the bottom` |
+| tutorial | `!tutorial <top_text>\|<bottom_text>` | | Converts the video into an old-school YouTube tutorial made with Windows Movie Maker. You can customize the title screen's \<top_text\> and \<bottom_text\> the same way you would with the !text command. If no top text is provided, a randomized title is chosen. If no bottom text is provided, "By your_username" is chosen. | `!tutorial how to download google chrome\|working 2010` |
 <br>
 
 # Advanced
