@@ -369,6 +369,23 @@ class Filter(commands.Cog):
         )
     
 
+    async def _amplify(self, ctx, vstream, astream, kwargs):
+        vstream = vstream.filter('amplify', **kwargs)
+        return vstream, astream, {}
+    @commands.command(description='Make stuff colorful and sorta deepfried. Value between 4 and 16 is fun', pass_context=True)
+    async def amplify(self, ctx, factor : float = 6, radius : float = 1):
+        await video_creator.apply_filters_and_send(ctx, self._amplify, {'radius':radius, 'factor':factor})
+
+
+    async def _backwards(self, ctx, vstream, astream, kwargs):
+        vstream = ffmpeg.filter(vstream, 'reverse')
+        astream = ffmpeg.filter(astream, 'areverse')
+        return (vstream, astream, {})
+    @commands.command(description="Reverse the video.")
+    async def backwards(self, ctx):
+        await video_creator.apply_filters_and_send(ctx, self._backwards, {})
+
+
     async def _volume(self, ctx, vstream, astream, kwargs):
         astream = astream.filter('volume', **kwargs)
         return vstream, astream, {}
@@ -429,8 +446,12 @@ class Filter(commands.Cog):
         vstream = vstream.filter('eq', **kwargs)
         return vstream, astream, {}
     @commands.command(description='Increase/decrease brightness', pass_context=True)
-    async def brightness(self, ctx, brightness : float):
-        brightness = min(-1, max(brightness, 1))
+    async def brightness(self, ctx, brightness : str = '1'):
+        try:
+            brightness = int(brightness)
+            brightness = max(-1, min(brightness, 1))
+        except ValueError:
+            pass
         await video_creator.apply_filters_and_send(ctx, self._brightness, {'brightness':brightness})
 
 
@@ -462,8 +483,19 @@ class Filter(commands.Cog):
         return vstream, astream, {}
     @commands.command(description='Resize the video. Default is 360x270', pass_context=True)
     async def scale(self, ctx, w=360, h=270):
-        w = max(w, 50)
-        h = max(h, 50)
+        if(w == 'auto' and h == 'auto'):
+            return
+        
+        if(w != 'auto'):
+            w = min(1240, max(w, 50))
+        else:
+            w = -2
+
+        if(h != 'auto'):
+            h = min(1240, max(h, 50))
+        else:
+            h = -2
+
         await video_creator.apply_filters_and_send(ctx, self._scale, {'w':w, 'h':h})
     
 
@@ -473,14 +505,6 @@ class Filter(commands.Cog):
     @commands.command(description='Change the FPS. default is 15fps', pass_context=True)
     async def fps(self, ctx, framerate=15):
         await video_creator.apply_filters_and_send(ctx, self._fps, {'fps':framerate})
-
-
-    async def _amplify(self, ctx, vstream, astream, kwargs):
-        vstream = vstream.filter('amplify', **kwargs)
-        return vstream, astream, {}
-    @commands.command(description='Make stuff colorful and sorta deepfried. Value between 4 and 16 is fun', pass_context=True)
-    async def amplify(self, ctx, radius : float):
-        await video_creator.apply_filters_and_send(ctx, self._amplify, {'radius':radius})
     
 
     async def _cartoony(self, ctx, vstream, astream, kwargs):
@@ -526,6 +550,9 @@ class Filter(commands.Cog):
                 b_dict[arg_name] = b[i]
 
         await video_creator.apply_filters_and_send(ctx, self._equalizer, b_dict)
+    @commands.command(description='18-band equalizer. You can provide 18 numbers for each frequency band. Not setting a number, or setting a number to -1, randomizes it.', pass_context=True)
+    async def equalize(self, ctx, b1=-1, b2=-1, b3=-1, b4=-1, b5=-1, b6=-1, b7=-1, b8=-1, b9=-1, b10=-1, b11=-1, b12=-1, b13=-1, b14=-1, b15=-1, b16=-1, b17=-1, b18=-1):
+        await self.equalizer(ctx, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15, b16, b17, b18)
     
 
     async def _trim(self, ctx, vstream, astream, kwargs):
@@ -560,6 +587,9 @@ class Filter(commands.Cog):
             end = '00:0' + end
 
         await video_creator.apply_filters_and_send(ctx, self._trim, {'start':start, 'end':end})
+    @commands.command(description='Trim the start/end of a video. Example: !trim 0:13 1:27.3 to trim off anything before 13 seconds and after 1 minute and 27.3 seconds. You can also use start and end (examples: !trim start 1:27.3 and !trim 0:13 end)')
+    async def extract(self, ctx, start : str = 'start', end : str = 'end'):
+        await self.trim(ctx, start, end)
     
 
     async def _concat(self, ctx, vstream, astream, kwargs):
@@ -596,23 +626,16 @@ class Filter(commands.Cog):
         astream = astream.filter('chorus', delays='80ms', decays=1, speeds=20, depths=4)
         vstream = (
             vstream
-            .filter('amplify', radius=4)
+            .filter('amplify', radius=1, factor=5)
+            .filter('eq', contrast=1.3)
             .filter('lagfun', decay=0.95)
-            .filter('amplify', radius=2)
+            .filter('eq', saturation=1.3)
+            .filter('amplify', radius=1, factor=15)
         )
         return vstream, astream, {'fs':'4M'}
     @commands.command(description='No description needed.', pass_context=True)
     async def demonize(self, ctx):
         await video_creator.apply_filters_and_send(ctx, self._demonize, {})
-
-
-    async def _backwards(self, ctx, vstream, astream, kwargs):
-        vstream = ffmpeg.filter(vstream, 'reverse')
-        astream = ffmpeg.filter(astream, 'areverse')
-        return (vstream, astream, {})
-    @commands.command(description="Reverse the video.")
-    async def backwards(self, ctx):
-        await video_creator.apply_filters_and_send(ctx, self._backwards, {})
     
 
     async def _speed(self, ctx, vstream, astream, kwargs):
