@@ -24,7 +24,7 @@ class Corruption(commands.Cog):
         return (int(random.uniform(0.03, 0.05) * filesize), int(random.uniform(0.95, 0.97) * filesize))
 
     async def _tomato(self, filename, args, suffix):
-        p = Popen(f'python3 ./tomato.py -i {filename} {args}', bufsize=2048, shell=True, stdin=subprocess.PIPE)
+        p = Popen(f'python3 ./tomato/tomato.py -i {filename} {args}', bufsize=2048, shell=True, stdin=subprocess.PIPE)
         p.wait()
         os.remove(filename)
         os.rename(f'{filename.split(".avi")[0]}{suffix}.avi', filename)
