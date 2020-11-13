@@ -11,7 +11,7 @@ Example: `!saturate 5` can also be sent as `!saturation 5`<br><br>
 # Filters
 | Command | Format | Min/Max Values | Description | Examples |
 | --- | --- | --- | --- | --- |
-| amplify | `!amplify <amount> <radius>` | amount: `0 to 65535`<br>radius: `1 to 63` | Makes pixels more colorful the more they change. A higher \<factor\> makes the pixels more colorful, with a default value of 6.<br><br>OPTIONAL: \<radius\> determines how many adjacent frames each frame looks at to consider how much a pixel has changed by. By default the value is 1.<br><br>NOTE: a higher \<radius\> causes more frames to drop at the start and end of the video. | `!amplify 15`<br><br>`!amplify 15 30`
+| amplify | `!amplify <amount> <radius>` | amount: `0 to 65535`<br>radius: `1 to 63` | Makes pixels more colorful the more they change. A higher \<amount\> makes the pixels more colorful, with a default value of 6.<br><br>OPTIONAL: \<radius\> determines how many adjacent frames each frame looks at to consider how much a pixel has changed by. By default the value is 1.<br><br>NOTE: a higher \<radius\> causes more frames to drop at the start and end of the video. | `!amplify 15`<br><br>`!amplify 15 30`
 | audioswap | `!audioswap` | | Swap the audio in the second to most recent video with the audio from the most recent video. | `!audioswap` |
 | backwards | `!backwards` | | Reverse the video. | `!backwards` |
 | blur | `!blur <amount>` | `1 - 127` | Blur the video. \<amount\> represents the radius of the blur around each pixel. | `!blur 10` |
