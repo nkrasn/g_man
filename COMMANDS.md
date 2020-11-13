@@ -33,6 +33,16 @@ Example: `!saturate 5` can also be sent as `!saturation 5`<br><br>
 | wobble | `!wobble <frequency>` | `More than 0` | Make the audio wobbly. | `!wobble 15` |
 <br>
 
+# Corruption
+| Command | Format | Min/Max Values | Description | Examples |
+| --- | --- | --- | --- | --- |
+| corrupt | `!corrupt <intensity>` | `0 to 1` | Set random bytes in the video file to a random number. | `!corrupt 0.7` |
+| mosh | `!mosh` | | Datamoshing, using `tomato.py`. | `!mosh` |
+| rearrange | `!rearrange <intensity>` | `0 to 1` | Swap random chunks of bytes in the video. A higher \<intensity\> does more swaps and makes the chunks longer. | `!rearrange 0.4` |
+| smear | `!smear` | | Makes a cool smearing effect, using `tomato.py`. | `!smear` |
+| stutter | `!stutter` | | Repeats random chunks of bytes back-to-back in various places. A bit like `!smear`, but not as smooth. | `!stutter` |
+<br>
+
 # Fun effects
 | Command | Format | Min/Max Values | Description | Examples |
 | --- | --- | --- | --- | --- |
