@@ -14,8 +14,8 @@ Filters are applied using FFMPEG. Some commands use tomato.py (https://github.co
 * Run a command and the bot will reply back with the edited video.
 
 ## Commands
-All commands start with !<br>
-Command list coming soon. At the moment, you can run !help to see all commands, and !help command_name to get more details.
+https://github.com/nkrasn/g_man/blob/master/COMMANDS.md<br>
+You can also run !help to see all commands, and !help command_name to get more details.
 
 ## Requirements
 * discord.py with voice support (tested on version 1.5)
