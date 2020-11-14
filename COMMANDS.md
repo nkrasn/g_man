@@ -18,6 +18,7 @@ Example: `!saturate 5` can also be sent as `!saturation 5`<br><br>
 | brightness | `!brightness <amount>` | `-1 to 1` | Adjust the brightness of a video. | `!brightness 2` |
 | concat<br>merge | `!concat` | | Combine the two most recently sent videos. Most recent video will be played after the second to most recent. | `!concat` |
 | contrast | `!contrast <amount>` | `-1000 to 1000` | Change the video's contrast. | `!contrast 2` |
+| edges | `!edges` | | Show only the edges in the video. | `!edges` |
 | equalize<br>equalizer | `!equalize <b1> <b2> ... <b17> <b18>` | `0 to inf` | 18 band equalizer. More information here: https://ffmpeg.org/ffmpeg-filters.html#superequalizer<br>You can provide a number for each frequency band. If you don't provide a value, or set a value as -1, it is set to a random number between 0 and 20. | `!equalize 10 10 -1 5 5 0 0` |
 | extract<br>trim | `!extract <start_time> <end_time>` | | Extract a clip between \<start_time\> and \<end_time\>. An example of a \<start_time\> or \<end_time\> value is 1:27.3 (1 minute and 27.3 seconds) or 0:02 (2 seconds). You can also use `start` and `end` as a value to represent 0:00 and the end of the video. | `!extract start 0:03.4`
 | fps | `!fps <framerate>` | `1 to 60` | Set the framerate of the video. | `!fps 15` |
@@ -58,14 +59,15 @@ Example: `!saturate 5` can also be sent as `!saturation 5`<br><br>
 <br>
 
 # Advanced
-Some of these advanced features can be a little buggy at the moment.
-* Some commands can use expressions/timeline editing variables from FFMPEG. More information here: https://ffmpeg.org/ffmpeg-filters.html#Timeline-editing<br>
-This means you can recreate the rainbow effect with the command `!hue t*360`
-* You can use most FFMPEG filters with the `!filter` command.
-    * Format: `!filter <type> <filter_name> <filter_args>`
-        * `<type>`: `v` for video filter, `a` for audio filter
-        * `<filter_name>`: the name of the filter 
-        * `<filter_args>`: a list of arguments for the filter. Each argument is separated by a space, and arguments are formatted as `arg_name=value`
-    * Examples:
-        * `!filter v edgedetect low=0.1 mode=wires`
-        * `!filter a volume volume=10 enable=gte(t,4)`
+## !filter command
+You can apply almost any filter from FFMPEG using the !filter command.<br>
+* Format: `!filter <filter_name> <filter_args>`
+* \<filter_args\> are formatted in this way: `arg1_name=arg1_value arg2_name=arg2_value ...`
+* Examples:
+    * `!filter aecho`
+    * `!filter edgedetect low=0.1 mode=wires`
+    * `!filter drawtext text="g_man was here" x="(main_w-tw)/2" y="(main_h-th)/2 + 100*sin(t*6)" fontsize=50`
+* Multiple filters can be applied with one message by simply appending another `!filter <filter_name> <filter_args>`
+* Examples:
+    * `!filter reverse !filter areverse`
+    * `!filter eq contrast=1.2 !filter hue h=60 enable=gte(t,3) !filter negate`

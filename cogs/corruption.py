@@ -34,7 +34,8 @@ class Corruption(commands.Cog):
         await self._tomato(filename, '', '-void')
     @commands.command(description='Datamoshing. Provide a number to change quality (lowest/default = 1.5). Provide another number to change output resolution width (default = 640)', pass_context=True)
     async def mosh(self, ctx):
-        await video_creator.apply_corruption_and_send(ctx, self._mosh, {})
+        #await video_creator.apply_corruption_and_send(ctx, self._mosh, {}, {'vcodec':'libx264', 'qmin':30, 'qmax':30, 'g':2500, 'keyint_min':2500})
+        await video_creator.apply_corruption_and_send(ctx, self._mosh, {}, {'vcodec':'mpeg4', 'vtag':'xvid', 'qmin':30, 'qmax':30, 'g':60, 'keyint_min':60})
     
 
     async def _smear(self, ctx, filename, kwargs):

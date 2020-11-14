@@ -8,6 +8,7 @@ import youtube_dl
 import image_cache
 import re
 import os
+import shlex
 import ffmpeg
 import traceback
 import random
@@ -71,6 +72,7 @@ class Filter(commands.Cog):
             'axcorrelate',
             'bandpass',
             'bandreject',
+            'bass',
             'lowshelf',
             'biquad',
             'bs2b',
@@ -419,6 +421,14 @@ class Filter(commands.Cog):
     async def contrast(self, ctx, contrast : float = 10):
         contrast = min(-1000, max(contrast, 1000))
         await video_creator.apply_filters_and_send(ctx, self._contrast, {'contrast':contrast})
+    
+
+    async def _edges(self, ctx, vstream, astream, kwargs):
+        vstream = vstream.filter('edgedetect', low=0.1, mode='wires')
+        return (vstream, astream, {})
+    @commands.command(description="Show only the edges in the video.")
+    async def edges(self, ctx):
+        await video_creator.apply_filters_and_send(ctx, self._edges, {})
 
 
     async def _saturation(self, ctx, vstream, astream, kwargs):
@@ -682,114 +692,82 @@ class Filter(commands.Cog):
 
     
 
-            
 
 
-    @commands.command(description="Apply any video filter that's in ffmpeg 4.2.2. If you are doing a multi-input filter, replace v|a with the last n videos you need to use. Format: !filter v|a|last_n_vids filter_name arg1=0.5 arg2=1.1")
-    async def filter(self, ctx, filter_type, filter_name, *, arg_list : str = None):
-        if((arg_list is None and not (filter_name == 'reverse' or filter_name == 'areverse' or filter_name == 'earwax'))):
-            return
-        await self.execute_filter(ctx, [[filter_type, filter_name, arg_list]])
-    
-    # Run filters
-    # effects: [[filter_type, filter_name, param_list], ...]
-    async def execute_filter(self, ctx, effects):
-        input_vids = []
-        input_count = 1
-        # not a good way to check if this is single-input
-        if(effects[0][0] in 'va'):
-            input_vids.append(image_cache.get_from_cache(str(ctx.message.channel.id))[-1])
-        # multi-input
-        else: 
-            input_count = int(effects[0][0])
-            for i in range(input_count):
-                input_vids.append(image_cache.get_from_cache(str(ctx.message.channel.id))[-(i+1)])
+    async def _filter(self, ctx, vstream, astream, kwargs):
+        commands = kwargs['commands']
+        for command in commands:
+            filter_name = command[0]
+            filter_args = command[1:]
+            filter_args_kwargs = {}
+            for arg in filter_args:
+                arg_name, arg_val = arg.split('=',1)
+                filter_args_kwargs[arg_name] = arg_val
 
-        # Determine if the source should be an attachment or youtube video
-        for i in range(len(input_vids)):
-            input_vid = input_vids[i]
-            #input_vid = image_cache.get_from_cache(str(ctx.message.channel.id))[-1]
-            is_yt = False
-            if(input_vid is None): # no video found in the channel
-                await ctx.send("Didn't find any videos to modify...")
+            if(filter_name in self.v_filters):
+                vstream = vstream.filter(filter_name, **filter_args_kwargs)
+            elif(filter_name in self.a_filters):
+                astream = astream.filter(filter_name, **filter_args_kwargs)
+
+        return (vstream, astream, {'vsync':0})
+    @commands.command(description="Apply most filters available in in ffmpeg 4.2.2")
+    async def filter(self, ctx, *, commands : str = ''):
+        commands = commands.split('!filter')
+        for k,v in enumerate(commands):
+            commands[k] = shlex.split(v)
+        
+        # Remove invalid commands
+        commands_copy = commands
+        commands = []
+        invalid_commands_msg = ''
+        for command in commands_copy:
+            if(command[0] not in self.a_filters and command[0] not in self.v_filters):
+                invalid_commands_msg += f'{command[0]} is not supported... yet?\n'
+            else:
+                commands.append(command)
+        if(invalid_commands_msg != ''):
+            if(len(commands) == 0):
+                await ctx.send('None of those filters are supported... yet?')
                 return
-            elif(re.match(image_cache.yt_regex, input_vid) or re.match(image_cache.twitter_regex, input_vid)): # yt video
-                is_yt = True
-                result, input_vids[i] = await image_cache.yt(ctx, input_vid, str(i))
-                if(not result):
-                    await ctx.send("Quitting :(")
-                    return
-        # Determine if the output is video or audio
-        out_filename = 'vids/out.'
-        only_audio = False
-        if(input_vids[0].split('.')[-1] in image_cache.audio_filetypes): # this is broken, audio never worked
-            out_filename += 'ogg'
-            only_audio = True
-        else:
-            out_filename += 'mp4'
+            else:
+                await ctx.send(f'{invalid_commands_msg}Remaining filters will still be applied.')
 
-        async with ctx.typing():
-            try:
-                input_vid = input_vids[0]
-                print(input_vid)
-                
-                in_stream = ffmpeg.input(input_vid)
-                out_stream = None
+        await video_creator.apply_filters_and_send(ctx, self._filter, {'commands':commands})
 
-                if(only_audio):
-                    a = in_stream
-                else:
-                    v = in_stream.video
-                    a = in_stream.audio
-                
-                for effect in effects:
-                    filter_type = effect[0]
-                    filter_name = effect[1]
-                    param_list = effect[2]
 
-                    # Create params
-                    param_dict = {}
-                    param_list = param_list.split(' ')
-                    for param in param_list:
-                        param = param.split('=')
-                        param_dict[param[0]] = param[1]
 
-                    if(input_count == 1):
-                        # Do audio stuff
-                        if(filter_type == 'a'):
-                            a = a.filter(filter_name, **param_dict)
-                        
-                        # Do video stuff
-                        if(filter_type == 'v' and not only_audio):
-                            v = v.filter(filter_name, **param_dict)
-                        
-                        out_stream = ffmpeg.output(v, a, out_filename, fs='7M')
-                    else:
-                        # Do multi-input video stuff
-                        in_streams = []
-                        in_streams_a = []
-                        in_streams_v = []
-                        for i in range(len(input_vids)):
-                            in_streams.append(ffmpeg.input(input_vids[i]))
-                            in_streams_a.append(in_streams[i].audio)
-                            in_streams_v.append(in_streams[i].video)
-                        mixed_a = ffmpeg.filter(in_streams_a, "amix", **{'inputs': len(in_streams_a)})
-                        mixed_v = ffmpeg.filter(in_streams_v, filter_name, **param_dict)
-                        out_stream = ffmpeg.output(mixed_v, mixed_a, out_filename, fs='7M')
-                        
 
-                out_stream = out_stream.global_args('-loglevel', 'error')
-                out_stream = out_stream.global_args('-nostdin')
-                ffmpeg.run(out_stream, cmd='ffmpeg4-2-2/ffmpeg', overwrite_output=True)
 
-                await ctx.send(file=discord.File(out_filename))
-            except TimeoutError as e:
-                await ctx.send('Command took to long to execute.\n```\n' + str(e) + '```')
-            except Exception as e:
-                await ctx.send('Error:\n```\n' + str(e) + '```')
-                print(traceback.format_exc())
-            if(is_yt):
-                os.remove(input_vid)
+    async def _oldfilter(self, ctx, vstream, astream, kwargs):
+        commands = kwargs['command']
+        filter_name = commands[0]
+        filter_args = commands[1:]
+        filter_args_kwargs = {}
+        for arg in filter_args:
+            arg_name, arg_val = arg.split('=',1)
+            filter_args_kwargs[arg_name] = arg_val
+
+        if(filter_name in self.v_filters):
+            vstream = vstream.filter(filter_name, **filter_args_kwargs)
+        elif(filter_name in self.a_filters):
+            astream = astream.filter(filter_name, **filter_args_kwargs)
+
+        return (vstream, astream, {'vsync':0})
+    @commands.command(description="Apply most filters available in in ffmpeg 4.2.2")
+    async def oldfilter(self, ctx, *, command : str = ''):
+        command = shlex.split(command)
+        if(command[0] not in self.a_filters and command[0] not in self.v_filters):
+            await ctx.send("That filter is not supported... yet?")
+            return
+        await video_creator.apply_filters_and_send(ctx, self._filter, {'command':command})
+        
+    
+
+
+
+
+
+    
         
 
 def setup(bot):
