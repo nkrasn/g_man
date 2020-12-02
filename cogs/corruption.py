@@ -8,7 +8,7 @@ import youtube_dl
 import random
 import os
 import shutil
-import image_cache
+import media_cache
 import re
 import os
 import ffmpeg
@@ -32,7 +32,7 @@ class Corruption(commands.Cog):
 
     async def _mosh(self, ctx, filename, kwargs):
         await self._tomato(filename, '', '-void')
-    @commands.command(description='Datamoshing. Provide a number to change quality (lowest/default = 1.5). Provide another number to change output resolution width (default = 640)', pass_context=True)
+    @commands.command(pass_context=True)
     async def mosh(self, ctx):
         #await video_creator.apply_corruption_and_send(ctx, self._mosh, {}, {'vcodec':'libx264', 'qmin':30, 'qmax':30, 'g':2500, 'keyint_min':2500})
         await video_creator.apply_corruption_and_send(ctx, self._mosh, {}, {'vcodec':'mpeg4', 'vtag':'xvid', 'qmin':30, 'qmax':30, 'g':60, 'keyint_min':60})
@@ -40,7 +40,7 @@ class Corruption(commands.Cog):
 
     async def _smear(self, ctx, filename, kwargs):
         await self._tomato(filename, '-m pulse -c 5', '-pulse-c5')
-    @commands.command(description='Corrupt the video by smearing moving things around.')
+    @commands.command()
     async def smear(self, ctx):
         await video_creator.apply_corruption_and_send(ctx, self._smear, {})
 
@@ -65,7 +65,7 @@ class Corruption(commands.Cog):
             seek_intensity = int((1-intensity**2)*10000 + intensity * 4000)
             corrupt_pos += random.randint(int(seek_intensity*0.05), seek_intensity)
         fs.close()
-    @commands.command(description='Corrupt the bytes in the video.)', pass_context=True)
+    @commands.command(pass_context=True)
     async def corrupt(self, ctx, intensity: float = 0.5):
         intensity = max(0, min(1, intensity))
         await video_creator.apply_corruption_and_send(ctx, self._corrupt, {'intensity':intensity})
@@ -122,7 +122,7 @@ class Corruption(commands.Cog):
             fs.write(segment1 + chunk1 + segment2 + chunk2 + segment3)
 
         fs.close()
-    @commands.command(description='Corrupt the video by swapping random chunks of its file.', pass_context=True)
+    @commands.command(pass_context=True)
     async def rearrange(self, ctx, intensity : float = 0.5):
         intensity = max(0, min(1, intensity))
         await video_creator.apply_corruption_and_send(ctx, self._rearrange, {'intensity':intensity})
@@ -166,7 +166,7 @@ class Corruption(commands.Cog):
         fs.close()
 
         os.remove(temp_filename)
-    @commands.command(description='Make the video stutter a lot')
+    @commands.command()
     async def stutter(self, ctx):
         await video_creator.apply_corruption_and_send(ctx, self._stutter, {})
 

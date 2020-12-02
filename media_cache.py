@@ -78,22 +78,6 @@ async def yt(ctx, url, suffix):
 
 async def download_last_video(ctx):
     return await download_nth_video(ctx, 0)
-    '''
-    # Determine if the source should be an attachment or youtube video
-    input_vid = get_from_cache(str(ctx.message.channel.id))[-1]
-    #await ctx.send(f'working on `{input_vid}`')
-    is_yt = False
-    if(input_vid is None): # no video found in the channel
-        await ctx.send("Couldn't find a video to send, try sending a video before using a command.")
-        return None, None, False
-    elif(re.match(yt_regex, input_vid) or re.match(twitter_regex, input_vid)): # yt video
-        is_yt = True
-        result, input_vid = await yt(ctx, input_vid, 0)
-        if(not result):
-            await ctx.send("Could not download the video!")
-            return None, None, False
-    return input_vid, is_yt, True
-    '''
 
 async def download_nth_video(ctx, n):
     n = -(n + 1) # most recent videos are at the end

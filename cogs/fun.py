@@ -5,7 +5,7 @@ import subprocess
 import signal
 from subprocess import Popen
 import youtube_dl
-import image_cache
+import media_cache
 import re
 import os
 import ffmpeg
@@ -24,7 +24,7 @@ class Fun(commands.Cog):
     async def _americ(self, ctx, vstream, astream, kwargs):
         astream = ffmpeg.input('clips/americ.mp3')
         return (vstream, astream, {'shortest':None, 'vcodec':'copy'})
-    @commands.command(description='for smoothie', pass_context=True)
+    @commands.command(pass_context=True)
     async def americ(self, ctx):
         await video_creator.apply_filters_and_send(ctx, self._americ, {})
     
@@ -32,10 +32,10 @@ class Fun(commands.Cog):
     async def _cartoony(self, ctx, vstream, astream, kwargs):
         vstream = vstream.filter('edgedetect', low=0.1, high=0.3, mode='colormix')
         return vstream, astream, {}
-    @commands.command(description='Make stuff look kinda cartoony', pass_context=True)
+    @commands.command(pass_context=True)
     async def cartoony(self, ctx):
         await video_creator.apply_filters_and_send(ctx, self._cartoony, {})
-    @commands.command(description='Make stuff look kinda cartoony', pass_context=True)
+    @commands.command(pass_context=True)
     async def cartoon(self, ctx):
         await self.cartoony(ctx)
 
@@ -51,7 +51,7 @@ class Fun(commands.Cog):
             .filter('amplify', radius=1, factor=15)
         )
         return vstream, astream, {'fs':'4M'}
-    @commands.command(description='No description needed.', pass_context=True)
+    @commands.command(pass_context=True)
     async def demonize(self, ctx):
         await video_creator.apply_filters_and_send(ctx, self._demonize, {})
     
@@ -59,7 +59,7 @@ class Fun(commands.Cog):
     async def _histogram(self, ctx, vstream, astream, kwargs):
         vstream = astream.filter('ahistogram')
         return (vstream, astream, {})
-    @commands.command(description='Make a histogram of the video\'s audio.')
+    @commands.command()
     async def histogram(self, ctx):
         await video_creator.apply_filters_and_send(ctx, self._histogram, {})
     
@@ -75,17 +75,17 @@ class Fun(commands.Cog):
         vstream = vstream.filter('scale', h=320, w=-2).filter('setsar', r='1:1')
         vstream = ffmpeg.overlay(vstream, watermark_stream, x=x, y=y)
         return (vstream, astream, {})
-    @commands.command(description="Unregistered Hypercam 2")
+    @commands.command()
     async def hypercam(self, ctx):
         await video_creator.apply_filters_and_send(ctx, self._watermark, {'watermark_filepath':'clips/hypercam.jpg', 'x':0, 'y':0, 'w':None, 'h':None})    
-    @commands.command(description="ifunny")
+    @commands.command()
     async def ifunny(self, ctx):
         await video_creator.apply_filters_and_send(ctx, self._watermark, {'watermark_filepath':'clips/ifunny.jpg', 'x':'main_w-overlay_w', 'y':'main_h-overlay_h', 'w':-2, 'h':16})
         
     
     async def _mp3(self, ctx, vstream, astream, kwargs):
         return (vstream, astream, {})
-    @commands.command(description="Download the video as an mp3.")
+    @commands.command()
     async def mp3(self, ctx):
         await video_creator.apply_filters_and_send(ctx, self._mp3, {'is_mp3':True})
 
@@ -93,7 +93,7 @@ class Fun(commands.Cog):
     async def _pingpong(self, ctx, vstream, astream, kwargs):
         pingpong_stream = ffmpeg.concat(vstream, astream, vstream.filter('reverse'), astream.filter('areverse'), v=1, a=1).split()
         return (pingpong_stream[0], pingpong_stream[1], {})
-    @commands.command(description="Plays the video, then plays it in reverse.")
+    @commands.command()
     async def pingpong(self, ctx):
         await video_creator.apply_filters_and_send(ctx, self._pingpong, {})
     
@@ -101,7 +101,7 @@ class Fun(commands.Cog):
     async def _rainbow(self, ctx, vstream, astream, kwargs):
         vstream = vstream.filter('hue', **kwargs)
         return vstream, astream, {}
-    @commands.command(description='Make a rainbow effect. You can provide a speed too!', pass_context=True)
+    @commands.command(pass_context=True)
     async def rainbow(self, ctx, speed : float = 1):
         await video_creator.apply_filters_and_send(ctx, self._rainbow, {'h':f't*{speed*360}'})
 
@@ -123,7 +123,7 @@ class Fun(commands.Cog):
         if(bot_msg != ''):
             vstream = vstream.filter('drawtext', text=bot_msg, y='(main_h-th-30)', **default_text_kwargs)
         return (vstream, astream, {})
-    @commands.command(description="2011 memes (separate top and bottom text with the | symbol)")
+    @commands.command()
     async def text(self, ctx, *, msg : str = 'top text|bottom text'):
         top_msg = ''
         bot_msg = ''
@@ -235,7 +235,7 @@ class Fun(commands.Cog):
         astream = ffmpeg.input("tutorial/" + random.choice(['evanescence', 'trance']) + '.mp3')
 
         return (output_stream, astream, {'vsync':2, 'shortest':None})
-    @commands.command(description='Create an old-school tutorial.')
+    @commands.command()
     async def tutorial(self, ctx, *, msg : str = ''):
         # Split up top and bottom
         title_top = ''

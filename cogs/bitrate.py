@@ -4,7 +4,7 @@ from discord.ext import commands
 import subprocess
 from subprocess import Popen
 import youtube_dl
-import image_cache
+import media_cache
 import json
 import re
 import os
@@ -15,15 +15,15 @@ class Bitrate(commands.Cog):
         self.bot = bot
     
 
-    @commands.command(description='Change video bitrate. Value of 15000 is fun!', pass_context=True)
+    @commands.command(pass_context=True)
     async def vb(self, ctx, bitrate : int):
         await self.execute_command(ctx, bitrate, None)
         
-    @commands.command(description='Change audio bitrate. Value of 15000 is fun!', pass_context=True)
+    @commands.command(pass_context=True)
     async def ab(self, ctx, bitrate : int):
         await self.execute_command(ctx, None, bitrate)
     
-    @commands.command(description='Change video and audio bitrate. Value of 15000 for both is fun!', pass_context=True)
+    @commands.command(pass_context=True)
     async def b(self, ctx, vbitrate : int, abitrate : int):
         await self.execute_command(ctx, vbitrate, abitrate)
 
@@ -37,14 +37,14 @@ class Bitrate(commands.Cog):
             return
 
         # Determine if the source should be an attachment or youtube video
-        input_vid = image_cache.get_from_cache(str(ctx.message.channel.id))[-1]
+        input_vid = media_cache.get_from_cache(str(ctx.message.channel.id))[-1]
         is_yt = False
         if(input_vid is None): # no video found in the channel
             await ctx.send("Didn't find any videos to modify...")
             return
-        elif(re.match(image_cache.yt_regex, input_vid)): # yt video
+        elif(re.match(media_cache.yt_regex, input_vid)): # yt video
             is_yt = True
-            result, input_vid = await image_cache.yt(ctx, input_vid, '0')
+            result, input_vid = await media_cache.yt(ctx, input_vid, '0')
             if(not result):
                 await ctx.send("Quitting :(")
                 return

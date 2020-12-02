@@ -3,7 +3,7 @@ import ffmpeg
 import discord
 import asyncio
 import os
-import image_cache
+import media_cache
 
 
 loading_emotes = [
@@ -19,7 +19,7 @@ async def set_progress_bar(ctx, idx):
 async def apply_filters_and_send(ctx, code, kwargs):
     #await ctx.message.add_reaction('\U0001F4AC')
     await set_progress_bar(ctx, 0)
-    input_vid, is_yt, result = await image_cache.download_last_video(ctx)
+    input_vid, is_yt, result = await media_cache.download_last_video(ctx)
     if(not result):
         await ctx.send("Error downloading the video")
         return
@@ -76,7 +76,7 @@ async def apply_filters_and_send(ctx, code, kwargs):
 # Very repetitive, maybe there's a way to combine the two wrappers
 async def apply_corruption_and_send(ctx, code, code_kwargs, avi_kwargs = {}):
     await set_progress_bar(ctx, 0)
-    input_vid, is_yt, result = await image_cache.download_last_video(ctx)
+    input_vid, is_yt, result = await media_cache.download_last_video(ctx)
     if(not result):
         await ctx.send("Error downloading the video")
         return

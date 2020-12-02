@@ -5,7 +5,7 @@ import subprocess
 import signal
 from subprocess import Popen
 import youtube_dl
-import image_cache
+import media_cache
 import re
 import os
 import shlex
@@ -381,20 +381,31 @@ class Filter(commands.Cog):
     async def _amplify(self, ctx, vstream, astream, kwargs):
         vstream = vstream.filter('amplify', **kwargs)
         return vstream, astream, {}
-    @commands.command(description='Make stuff colorful and sorta deepfried. Value between 4 and 16 is fun', pass_context=True)
+    @commands.command(pass_context=True)
     async def amplify(self, ctx, factor : float = 6, radius : float = 1):
         await video_creator.apply_filters_and_send(ctx, self._amplify, {'radius':radius, 'factor':factor})
 
 
     async def _audioswap(self, ctx, vstream, astream, kwargs):
-        vstream = ffmpeg.input(kwargs['target_filepath']).video
+        target_input = ffmpeg.input(kwargs['target_filepath'])
+        vstream = target_input.video
+        if(kwargs['blend']):
+            astream = ffmpeg.filter([target_input.audio, astream], 'amix')
         return (vstream, astream, {'shortest':None, 'vcodec':'copy'})
-    @commands.command(description="Swap the audio of the two most recent videos. The audio from the most recent video will be used.")
-    async def audioswap(self, ctx):
-        target_filepath, is_yt, result = await image_cache.download_nth_video(ctx, 1)
+    @commands.command()
+    async def audioblend(self, ctx):
+        target_filepath, is_yt, result = await media_cache.download_nth_video(ctx, 1)
         if(not result):
             return
-        await video_creator.apply_filters_and_send(ctx, self._audioswap, {'target_filepath':target_filepath})
+        await video_creator.apply_filters_and_send(ctx, self._audioswap, {'target_filepath':target_filepath, 'blend':True})
+        if(os.path.isfile(target_filepath)):
+            os.remove(target_filepath)
+    @commands.command()
+    async def audioswap(self, ctx):
+        target_filepath, is_yt, result = await media_cache.download_nth_video(ctx, 1)
+        if(not result):
+            return
+        await video_creator.apply_filters_and_send(ctx, self._audioswap, {'target_filepath':target_filepath, 'blend':False})
         if(os.path.isfile(target_filepath)):
             os.remove(target_filepath)
 
@@ -403,7 +414,7 @@ class Filter(commands.Cog):
         vstream = ffmpeg.filter(vstream, 'reverse')
         astream = ffmpeg.filter(astream, 'areverse')
         return (vstream, astream, {})
-    @commands.command(description="Reverse the video.")
+    @commands.command()
     async def backwards(self, ctx):
         await video_creator.apply_filters_and_send(ctx, self._backwards, {})
 
@@ -411,7 +422,7 @@ class Filter(commands.Cog):
     async def _blur(self, ctx, vstream, astream, kwargs):
         vstream = vstream.filter('median', **kwargs)
         return vstream, astream, {}
-    @commands.command(description='Blur the video. Use a value between 1 and 127.', pass_context=True)
+    @commands.command(pass_context=True)
     async def blur(self, ctx, radius : float = 10): # supposed to be int lmao
         radius = max(1, min(radius, 127))
         await video_creator.apply_filters_and_send(ctx, self._blur, {'radius':radius})
@@ -420,7 +431,7 @@ class Filter(commands.Cog):
     async def _brightness(self, ctx, vstream, astream, kwargs):
         vstream = vstream.filter('eq', **kwargs)
         return vstream, astream, {}
-    @commands.command(description='Increase/decrease brightness', pass_context=True)
+    @commands.command(pass_context=True)
     async def brightness(self, ctx, brightness : str = '1'):
         try:
             brightness = int(brightness)
@@ -447,15 +458,15 @@ class Filter(commands.Cog):
 
         joined = ffmpeg.concat(vfirst, afirst, vstream, astream, v=1, a=1).node
         return (joined[0], joined[1], {'vsync':0})
-    @commands.command(description='Play the last two videos side by side. The most recent video will be played after the second to most recent.')
+    @commands.command()
     async def concat(self, ctx):
-        first_vid_filepath, is_yt, result = await image_cache.download_nth_video(ctx, 1)
+        first_vid_filepath, is_yt, result = await media_cache.download_nth_video(ctx, 1)
         if(not result):
             return
         await video_creator.apply_filters_and_send(ctx, self._concat, {'first_vid_filepath':first_vid_filepath})
         if(os.path.isfile(first_vid_filepath)):
             os.remove(first_vid_filepath)
-    @commands.command(description='Play the last two videos side by side. The most recent video will be played after the second to most recent.')
+    @commands.command()
     async def merge(self, ctx):
         await self.concat(ctx)
 
@@ -463,7 +474,7 @@ class Filter(commands.Cog):
     async def _contrast(self, ctx, vstream, astream, kwargs):
         vstream = vstream.filter('eq', **kwargs)
         return vstream, astream, {}
-    @commands.command(description='Increase/decrease contrast', pass_context=True)
+    @commands.command(pass_context=True)
     async def contrast(self, ctx, contrast : float = 10):
         contrast = max(-1000, min(contrast, 1000))
         await video_creator.apply_filters_and_send(ctx, self._contrast, {'contrast':contrast})
@@ -472,7 +483,7 @@ class Filter(commands.Cog):
     async def _edges(self, ctx, vstream, astream, kwargs):
         vstream = vstream.filter('edgedetect', low=0.1, mode='wires')
         return (vstream, astream, {})
-    @commands.command(description="Show only the edges in the video.")
+    @commands.command()
     async def edges(self, ctx):
         await video_creator.apply_filters_and_send(ctx, self._edges, {})
 
@@ -480,7 +491,7 @@ class Filter(commands.Cog):
     async def _equalizer(self, ctx, vstream, astream, kwargs):
         astream = astream.filter('superequalizer', **kwargs)
         return vstream, astream, {}
-    @commands.command(description='18-band equalizer. You can provide 18 numbers for each frequency band. Not setting a number, or setting a number to -1, randomizes it.', pass_context=True)
+    @commands.command(pass_context=True)
     async def equalizer(self, ctx, b1=-1, b2=-1, b3=-1, b4=-1, b5=-1, b6=-1, b7=-1, b8=-1, b9=-1, b10=-1, b11=-1, b12=-1, b13=-1, b14=-1, b15=-1, b16=-1, b17=-1, b18=-1):
         b = [b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15, b16, b17, b18]
         b_dict = {}
@@ -492,7 +503,7 @@ class Filter(commands.Cog):
                 b_dict[arg_name] = b[i]
 
         await video_creator.apply_filters_and_send(ctx, self._equalizer, b_dict)
-    @commands.command(description='18-band equalizer. You can provide 18 numbers for each frequency band. Not setting a number, or setting a number to -1, randomizes it.', pass_context=True)
+    @commands.command(pass_context=True)
     async def equalize(self, ctx, b1=-1, b2=-1, b3=-1, b4=-1, b5=-1, b6=-1, b7=-1, b8=-1, b9=-1, b10=-1, b11=-1, b12=-1, b13=-1, b14=-1, b15=-1, b16=-1, b17=-1, b18=-1):
         await self.equalizer(ctx, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15, b16, b17, b18)
     
@@ -510,7 +521,7 @@ class Filter(commands.Cog):
         vstream = vstream.filter('trim', **trim_kwargs).filter('setpts', expr='PTS-STARTPTS')
         astream = astream.filter('atrim', **trim_kwargs).filter('asetpts', expr='PTS-STARTPTS')
         return (vstream, astream, {})
-    @commands.command(description='Extract a portion of the video. Example: !extract 0:13 1:27.3 to get the clip between 13 seconds and 1 minute 27.3 seconds. You can also use start and end (examples: !extract start 1:27.3 and !extract 0:13 end)')
+    @commands.command()
     async def extract(self, ctx, start : str = 'default', end : str = 'default'):
         sec_regex = r'[0-9]+(\.[0-9]+)?'
         min_regex = r'[0-9][0-9]?\:[0-9][0-9](\.[0-9]+)?'
@@ -540,7 +551,7 @@ class Filter(commands.Cog):
     async def _fps(self, ctx, vstream, astream, kwargs):
         vstream = vstream.filter('fps', **kwargs)
         return vstream, astream, {}
-    @commands.command(description='Change the FPS. default is 15fps', pass_context=True)
+    @commands.command(pass_context=True)
     async def fps(self, ctx, framerate=15):
         await video_creator.apply_filters_and_send(ctx, self._fps, {'fps':framerate})
     
@@ -548,7 +559,7 @@ class Filter(commands.Cog):
     async def _gamma(self, ctx, vstream, astream, kwargs):
         vstream = vstream.filter('eq', **kwargs)
         return vstream, astream, {}
-    @commands.command(description='Increase/decrease gamma', pass_context=True)
+    @commands.command(pass_context=True)
     async def gamma(self, ctx, gamma : float = 1.3):
         gamma = max(0.1, min(gamma, 10))
         await video_creator.apply_filters_and_send(ctx, self._gamma, {'gamma':gamma})
@@ -557,7 +568,7 @@ class Filter(commands.Cog):
     async def _hue(self, ctx, vstream, astream, kwargs):
         vstream = vstream.filter('hue', **kwargs)
         return vstream, astream, {}
-    @commands.command(description='Adjust hue', pass_context=True)
+    @commands.command(pass_context=True)
     async def hue(self, ctx, degrees : str):
         await video_creator.apply_filters_and_send(ctx, self._hue, {'h':degrees})
 
@@ -565,16 +576,16 @@ class Filter(commands.Cog):
     async def _invert(self, ctx, vstream, astream, kwargs):
         vstream = vstream.filter('negate')
         return vstream, astream, {}
-    @commands.command(description='Invert the colors', pass_context=True)
+    @commands.command(pass_context=True)
     async def invert(self, ctx):
         await video_creator.apply_filters_and_send(ctx, self._invert, {})
-    @commands.command(description='Invert the colors', pass_context=True)
+    @commands.command(pass_context=True)
     async def negate(self, ctx):
         await self.invert(ctx)
-    @commands.command(description='Invert the colors', pass_context=True)
+    @commands.command(pass_context=True)
     async def negative(self, ctx):
         await self.invert(ctx)
-    @commands.command(description='Invert the colors', pass_context=True)
+    @commands.command(pass_context=True)
     async def inverse(self, ctx):
         await self.invert(ctx)
 
@@ -582,7 +593,7 @@ class Filter(commands.Cog):
     async def _lagfun(self, ctx, vstream, astream, kwargs):
         vstream = vstream.filter('lagfun', **kwargs)
         return vstream, astream, {}
-    @commands.command(description='Make lighter pixels leak into next frames. Use a value between 0 and 1. Value of 1 makes nothing ever fade away.')
+    @commands.command()
     async def lagfun(self, ctx, decay : float = 0.99):
         decay = max(0, min(decay, 1.0))
         await video_creator.apply_filters_and_send(ctx, self._lagfun, {'decay':decay})
@@ -594,7 +605,7 @@ class Filter(commands.Cog):
         for i in range(amount - 1):
             loop_streams = ffmpeg.concat(loop_streams[0], loop_streams[1], vstream, astream, v=1, a=1).node
         return (loop_streams[0], loop_streams[1], {})
-    @commands.command(description="Loop the video.")
+    @commands.command()
     async def loop(self, ctx, amount : int = 2):
         amount = max(2, min(20, amount))
         await video_creator.apply_filters_and_send(ctx, self._loop, {'amount': amount})
@@ -603,11 +614,11 @@ class Filter(commands.Cog):
     async def _saturation(self, ctx, vstream, astream, kwargs):
         vstream = vstream.filter('hue', **kwargs)
         return vstream, astream, {}
-    @commands.command(description='Increase/decrease saturation', pass_context=True)
+    @commands.command(pass_context=True)
     async def saturation(self, ctx, saturation : float = 10):
         saturation = max(-10, min(saturation, 10))
         await video_creator.apply_filters_and_send(ctx, self._saturation, {'s':saturation})
-    @commands.command(description='Increase/decrease saturation', pass_context=True)
+    @commands.command(pass_context=True)
     async def saturate(self, ctx, saturation : float = 10):
         await self.saturation(ctx, saturation)
     
@@ -619,7 +630,7 @@ class Filter(commands.Cog):
             .filter('setsar', r='1:1')
         )
         return vstream, astream, {}
-    @commands.command(description='Resize the video. Default is 360x270', pass_context=True)
+    @commands.command(pass_context=True)
     async def scale(self, ctx, w : str = '360', h : str = '270'):
         if(w == 'auto' and h == 'auto'):
             return
@@ -653,7 +664,7 @@ class Filter(commands.Cog):
                 astream = astream.filter('atempo', 0.5)
                 current_speed *= 0.5
         return (vstream, astream, {})
-    @commands.command(description="Make the video faster or slower.")
+    @commands.command()
     async def speed(self, ctx, speed_change : float = 2.0):
         speed_change = max(0.05, speed_change)
         await video_creator.apply_filters_and_send(ctx, self._speed, {'speed_change': speed_change})
@@ -662,7 +673,7 @@ class Filter(commands.Cog):
     async def _volume(self, ctx, vstream, astream, kwargs):
         astream = astream.filter('volume', **kwargs)
         return vstream, astream, {}
-    @commands.command(description='Increase video volume.', pass_context=True)
+    @commands.command(pass_context=True)
     async def volume(self, ctx, volume_db : float):
         await video_creator.apply_filters_and_send(ctx, self._volume, {'volume':volume_db, 'precision': 'fixed'})    
 
@@ -670,7 +681,7 @@ class Filter(commands.Cog):
     async def _wobble(self, ctx, vstream, astream, kwargs):
         astream = astream.filter('chorus', delays='80ms', decays=1, depths=4, **kwargs)
         return vstream, astream, {}
-    @commands.command(description='Wobbly sound. Default speed is 8', pass_context=True)
+    @commands.command(pass_context=True)
     async def wobble(self, ctx, speed : str = '8'):
         await video_creator.apply_filters_and_send(ctx, self._wobble, {'speeds':speed})
 
@@ -701,7 +712,7 @@ class Filter(commands.Cog):
                 astream = astream.filter(filter_name, **filter_args_kwargs)
 
         return (vstream, astream, output_kwargs)
-    @commands.command(description="Apply most filters available in in ffmpeg 4.2.2. https://ffmpeg.org/ffmpeg-filters.html")
+    @commands.command()
     async def filter(self, ctx, *, commands : str = ''):
         commands = commands.split('!filter')
         for k,v in enumerate(commands):
