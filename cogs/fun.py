@@ -29,18 +29,40 @@ class Fun(commands.Cog):
         await video_creator.apply_filters_and_send(ctx, self._americ, {})
     
 
-    async def _audioswap(self, ctx, vstream, astream, kwargs):
-        vstream = ffmpeg.input(kwargs['target_filepath']).video
-        return (vstream, astream, {'shortest':None, 'vcodec':'copy'})
-    @commands.command(description="Swap the audio of the two most recent videos. The audio from the most recent video will be used.")
-    async def audioswap(self, ctx):
-        target_filepath, is_yt, result = await image_cache.download_nth_video(ctx, 1)
-        if(not result):
-            return
-        await video_creator.apply_filters_and_send(ctx, self._audioswap, {'target_filepath':target_filepath})
-        if(os.path.isfile(target_filepath)):
-            os.remove(target_filepath)
+    async def _cartoony(self, ctx, vstream, astream, kwargs):
+        vstream = vstream.filter('edgedetect', low=0.1, high=0.3, mode='colormix')
+        return vstream, astream, {}
+    @commands.command(description='Make stuff look kinda cartoony', pass_context=True)
+    async def cartoony(self, ctx):
+        await video_creator.apply_filters_and_send(ctx, self._cartoony, {})
+    @commands.command(description='Make stuff look kinda cartoony', pass_context=True)
+    async def cartoon(self, ctx):
+        await self.cartoony(ctx)
 
+
+    async def _demonize(self, ctx, vstream, astream, kwargs):
+        astream = astream.filter('chorus', delays='80ms', decays=1, speeds=20, depths=4)
+        vstream = (
+            vstream
+            .filter('amplify', radius=1, factor=5)
+            .filter('eq', contrast=1.3)
+            .filter('lagfun', decay=0.95)
+            .filter('eq', saturation=1.3)
+            .filter('amplify', radius=1, factor=15)
+        )
+        return vstream, astream, {'fs':'4M'}
+    @commands.command(description='No description needed.', pass_context=True)
+    async def demonize(self, ctx):
+        await video_creator.apply_filters_and_send(ctx, self._demonize, {})
+    
+
+    async def _histogram(self, ctx, vstream, astream, kwargs):
+        vstream = astream.filter('ahistogram')
+        return (vstream, astream, {})
+    @commands.command(description='Make a histogram of the video\'s audio.')
+    async def histogram(self, ctx):
+        await video_creator.apply_filters_and_send(ctx, self._histogram, {})
+    
 
     async def _watermark(self, ctx, vstream, astream, kwargs):
         x = kwargs['x']
@@ -59,6 +81,29 @@ class Fun(commands.Cog):
     @commands.command(description="ifunny")
     async def ifunny(self, ctx):
         await video_creator.apply_filters_and_send(ctx, self._watermark, {'watermark_filepath':'clips/ifunny.jpg', 'x':'main_w-overlay_w', 'y':'main_h-overlay_h', 'w':-2, 'h':16})
+        
+    
+    async def _mp3(self, ctx, vstream, astream, kwargs):
+        return (vstream, astream, {})
+    @commands.command(description="Download the video as an mp3.")
+    async def mp3(self, ctx):
+        await video_creator.apply_filters_and_send(ctx, self._mp3, {'is_mp3':True})
+
+
+    async def _pingpong(self, ctx, vstream, astream, kwargs):
+        pingpong_stream = ffmpeg.concat(vstream, astream, vstream.filter('reverse'), astream.filter('areverse'), v=1, a=1).split()
+        return (pingpong_stream[0], pingpong_stream[1], {})
+    @commands.command(description="Plays the video, then plays it in reverse.")
+    async def pingpong(self, ctx):
+        await video_creator.apply_filters_and_send(ctx, self._pingpong, {})
+    
+
+    async def _rainbow(self, ctx, vstream, astream, kwargs):
+        vstream = vstream.filter('hue', **kwargs)
+        return vstream, astream, {}
+    @commands.command(description='Make a rainbow effect. You can provide a speed too!', pass_context=True)
+    async def rainbow(self, ctx, speed : float = 1):
+        await video_creator.apply_filters_and_send(ctx, self._rainbow, {'h':f't*{speed*360}'})
 
     
     async def _text(self, ctx, vstream, astream, kwargs):
@@ -214,7 +259,8 @@ class Fun(commands.Cog):
                     'How to get on top of the night club in club penguin with out hacking',
                     'How to install cleo mods to GTA San Andreas',
                     'How to install weapon mods on GTA San Andreas (IMGTool)',
-                    'Gta San Andreas goez crazy'
+                    'Gta San Andreas goez crazy',
+                    'Austin Powers watch online free (link in description)'
                 ])
             else:
                 title_top = msg[0]
@@ -235,7 +281,6 @@ class Fun(commands.Cog):
             'wrapped_title':wrapped_title, 
             'title_font_size':title_font_size, 'sub_font_size':sub_font_size
         })
-    
         
 
 

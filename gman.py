@@ -1,5 +1,6 @@
 import discord
 import asyncio
+import threading
 from discord.ext import commands
 import importlib
 import bot_info
@@ -17,7 +18,7 @@ for f in vid_files:
 
 
 extensions = ['cogs.bitrate', 'cogs.filter', 'cogs.fun', 'cogs.corruption']
-bot = commands.Bot(command_prefix=commands.when_mentioned_or('!'), description='Upload a video or paste a discord/youtube/twitter link, then run a command!\nFilters powered by FFMPEG, mosh and smear commands run by tomato.py (https://github.com/itsKaspar/tomato).')
+bot = commands.Bot(command_prefix=commands.when_mentioned_or('!'), help_command=None)
 
 # Loads extensions, returns string saying what reloaded
 def reload_extensions(exs):
@@ -87,6 +88,12 @@ for ex in extensions:
         bot.load_extension(ex)
     except Exception as e:
         print('Failed to load {} because: {}'.format(ex, e))
+    
+# Help command
+@bot.command()
+@bot_info.is_owner()
+async def help(ctx):
+    await ctx.send('https://github.com/nkrasn/g_man/blob/master/COMMANDS.md')
 
 
 # Start the bot

@@ -1,13 +1,10 @@
 import traceback
 import ffmpeg
 import discord
+import asyncio
 import os
 import image_cache
 
-class TimeoutError(Exception):
-    pass
-def interrupt(a,b):
-    raise TimeoutError
 
 loading_emotes = [
     '\U0001F1EC',
@@ -28,7 +25,15 @@ async def apply_filters_and_send(ctx, code, kwargs):
         return
     await set_progress_bar(ctx, 1)
 
-    output_filename = f'vids/{ctx.message.id}.mp4'
+    is_mp3 = False
+    if('is_mp3' in kwargs):
+        is_mp3 = kwargs['is_mp3']
+            
+    output_filename = f'vids/{ctx.message.id}.'
+    if(is_mp3):
+        output_filename += 'mp3'
+    else:
+        output_filename += 'mp4'
     
     async with ctx.typing():
         try:
@@ -37,14 +42,17 @@ async def apply_filters_and_send(ctx, code, kwargs):
             if('fs' not in output_params):
                 output_params['fs'] = '7M'
             await set_progress_bar(ctx, 2)
-            (
-                ffmpeg
-                .output(input_stream_a, input_stream_v, output_filename, **output_params)
-                .run(cmd='ffmpeg4-2-2/ffmpeg', overwrite_output=True)
-            )
+
+            ffmpeg_output = None
+            if(is_mp3):
+                ffmpeg_output = ffmpeg.output(input_stream_a, output_filename, **output_params)
+            else:
+                ffmpeg_output = ffmpeg.output(input_stream_a, input_stream_v, output_filename, **output_params)
+            ffmpeg_output.run(cmd='ffmpeg4-2-2/ffmpeg', overwrite_output=True)
+
             await set_progress_bar(ctx, 3)
             await ctx.send(file=discord.File(output_filename))
-        except TimeoutError as e:
+        except asyncio.TimeoutError as e:
             await ctx.send(f'Command took to long to execute.\n```\n{str(e)}```')
         except Exception as e:
             await ctx.send(f'Error:\n```\n{str(e)}```')
@@ -105,7 +113,7 @@ async def apply_corruption_and_send(ctx, code, code_kwargs, avi_kwargs = {}):
                 )
                 await set_progress_bar(ctx, 3)
                 await ctx.send(file=discord.File(output_filename))
-        except TimeoutError as e:
+        except asyncio.TimeoutError as e:
             await ctx.send(f'Command took to long to execute.\n```\n{str(e)}```')
         except Exception as e:
             await ctx.send(f'Error:\n```\n{str(e)}```')

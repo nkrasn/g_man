@@ -8,7 +8,7 @@ import ffmpeg
 
 MAX_MEM_PER_CHANNEL = 3
 yt_regex = (r'(https?://)?(www\.)?(youtube|youtu|youtube-nocookie)\.(com|be)/(watch\?v=|embed/|v/|.+\?v=)?([^&=%\?]{11})')
-discord_cdn_regex = (r'https://cdn\.discordapp\.com/attachments/.+\.(mp4|webm|mov)')
+discord_cdn_regex = (r'https://(cdn|media)\.discordapp\.(com|net)/attachments/.+\.(mp4|webm|mov)')
 twitter_regex = (r'(https?://)?(www\.)?(mobile\.)?twitter\.com/.+/status/[0-9]+(\?.+)?')
 
 audio_filetypes = ['mp3', 'ogg', 'wav']
@@ -77,6 +77,8 @@ async def yt(ctx, url, suffix):
 
 
 async def download_last_video(ctx):
+    return await download_nth_video(ctx, 0)
+    '''
     # Determine if the source should be an attachment or youtube video
     input_vid = get_from_cache(str(ctx.message.channel.id))[-1]
     #await ctx.send(f'working on `{input_vid}`')
@@ -91,6 +93,7 @@ async def download_last_video(ctx):
             await ctx.send("Could not download the video!")
             return None, None, False
     return input_vid, is_yt, True
+    '''
 
 async def download_nth_video(ctx, n):
     n = -(n + 1) # most recent videos are at the end

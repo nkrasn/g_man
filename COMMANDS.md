@@ -20,7 +20,7 @@ Example: `!saturate 5` can also be sent as `!saturation 5`<br><br>
 | contrast | `!contrast <amount>` | `-1000 to 1000` | Change the video's contrast. | `!contrast 2` |
 | edges | `!edges` | | Show only the edges in the video. | `!edges` |
 | equalize<br>equalizer | `!equalize <b1> <b2> ... <b17> <b18>` | `0 to inf` | 18 band equalizer. More information here: https://ffmpeg.org/ffmpeg-filters.html#superequalizer<br>You can provide a number for each frequency band. If you don't provide a value, or set a value as -1, it is set to a random number between 0 and 20. | `!equalize 10 10 -1 5 5 0 0` |
-| extract<br>trim | `!extract <start_time> <end_time>` | | Extract a clip between \<start_time\> and \<end_time\>. An example of a \<start_time\> or \<end_time\> value is 1:27.3 (1 minute and 27.3 seconds) or 0:02 (2 seconds). You can also use `start` and `end` as a value to represent 0:00 and the end of the video. | `!extract start 0:03.4`
+| extract | `!extract <start_time> <end_time>`<br><br>`!extract <duration>` | | Extract the clip between \<start_time\> and \<end_time\>. Time can be specified in seconds (ex: `5` or `7.1`) or minutes:seconds (ex: `0:03` or `1:24.8`). You can also use `start` or `end` to specify the start or end of the video.<br><br>You can also use just one number as a `<duration>` to extract from the start of the video, meaning `!extract 0 1:15` is the same as `!extract 1:15`. | `!extract 3 5.5`<br><br>`!extract 1:15 1:30`<br><br>`!extract 10 end`<br><br>`!extract 5` |
 | fps | `!fps <framerate>` | `1 to 60` | Set the framerate of the video. | `!fps 15` |
 | gamma | `!gamma <amount>` | `0.1 to 10` | Change the video's gamma. | `!gamma 1.2` |
 | hue | `!hue <degrees>` | `-inf to inf` | Change the video's hue. | `!hue 180` |
@@ -50,8 +50,10 @@ Example: `!saturate 5` can also be sent as `!saturation 5`<br><br>
 | americ | `!americ` | | Replaces the video's audio with "Never Meant" by American Football. | `!americ` |
 | cartoony<br>cartoon | `!cartoony` | | Makes the video look more cartoony. | `!cartoony` |
 | demonize | `!demonize` | | Makes the video look and sound more scary. | `!demonize` |
+| histogram | `!histogram` | | Convert the video into a histogram of the audio volume. | `!volume` |
 | hypercam | `!hypercam` | | Add an Unregistered Hypercam 2 watermark. | `!hypercam` |
 | ifunny | `!ifunny` | | Add an iFunny watermark. | `!ifunny` |
+| mp3 | `!mp3` | | Convert video to an mp3. | `!mp3`|
 | pingpong | `!pingpong` | | Plays the video, then plays it in reverse. | `!pingpong` |
 | rainbow | `!rainbow <speed>` | `-inf to inf` | Makes the hue change over time, creating a rainbow effect. By default it's 360 degrees per second, you can multiply this speed by \<speed\>. | `!rainbow 2` |
 | text | `!text <top_text>\|<bottom_text>` | | Adds captions to the top and bottom of the video. You separate \<top_text\> and \<bottom_text\> with a pipe symbol `\|`. | `!text this will be on top\|and this will be on the bottom`<br><br>`!text this will only be on top`<br><br>`!text \|this will only be on the bottom` |
