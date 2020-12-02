@@ -15,7 +15,7 @@ Filters are applied using FFMPEG. Some commands use tomato.py (https://github.co
 
 ## Commands
 https://github.com/nkrasn/g_man/blob/master/COMMANDS.md<br>
-You can also run !help to see all commands, and !help command_name to get more details.
+You can get this link from within Discord by sending "!help" in a channel
 
 ## Requirements
 * discord.py with voice support (tested on version 1.5)
