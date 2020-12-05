@@ -74,7 +74,7 @@ async def apply_filters_and_send(ctx, code, kwargs):
 
 # Convert corrupted video to mp4
 # Very repetitive, maybe there's a way to combine the two wrappers
-async def apply_corruption_and_send(ctx, code, code_kwargs, avi_kwargs = {}):
+async def apply_corruption_and_send(ctx, code, code_kwargs, avi_kwargs = {}, mp4_kwargs = {}):
     await set_progress_bar(ctx, 0)
     input_vid, is_yt, result = await media_cache.download_last_video(ctx)
     if(not result):
@@ -92,7 +92,7 @@ async def apply_corruption_and_send(ctx, code, code_kwargs, avi_kwargs = {}):
                 ffmpeg
                 .input(input_vid)
                 .output(avi_filename, fs='7M', **avi_kwargs)#qmin=30, qmax=30, g=2500, keyint_min=2500)#**x264_params)
-                .run(cmd='ffmpeg4-2-2/ffmpeg')
+                .run(cmd='ffmpeg4-2-2/ffmpeg', overwrite_output=True)
             )
 
             successful_corrupt = True
@@ -108,7 +108,7 @@ async def apply_corruption_and_send(ctx, code, code_kwargs, avi_kwargs = {}):
                 (
                     ffmpeg
                     .input(avi_filename)
-                    .output(output_filename, fs='7M')
+                    .output(output_filename, fs='7M', **mp4_kwargs)
                     .run(cmd='ffmpeg4-2-2/ffmpeg', overwrite_output=True)
                 )
                 await set_progress_bar(ctx, 3)

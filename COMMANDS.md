@@ -1,5 +1,8 @@
-Some commands may be listed as having multiple names, this means you can call the command in multiple ways.<br>
-Example: `!saturate 5` can also be sent as `!saturation 5`<br><br>
+Run any of these commands, and the most recently posted video will be edited. Videos can be a link (youtube, twitter, and discord supported) or a direct upload.
+
+Some commands may be listed as having multiple names, this means they are the same command.<br>
+Example: `!saturate 5` is the same as `!saturation 5`<br><br>
+
 # Bitrate
 | Command | Format | Min/Max Values | Description | Examples |
 | --- | --- | --- | --- | --- |
@@ -11,7 +14,7 @@ Example: `!saturate 5` can also be sent as `!saturation 5`<br><br>
 # Filters
 | Command | Format | Min/Max Values | Description | Examples |
 | --- | --- | --- | --- | --- |
-| amplify | `!amplify <amount> <radius>` | amount: `0 to 65535`<br>radius: `1 to 63` | Makes pixels more colorful the more they change. A higher \<amount\> makes the pixels more colorful, with a default value of 6.<br><br>OPTIONAL: \<radius\> determines how many adjacent frames each frame looks at to consider how much a pixel has changed by. By default the value is 1.<br><br>NOTE: a higher \<radius\> causes more frames to drop at the start and end of the video. | `!amplify 15`<br><br>`!amplify 15 30`
+| amplify | `!amplify <amount> <radius>` | amount: `0 to 65535`<br><br>radius: `1 to 63` | Makes pixels more colorful the more they change. A higher \<amount\> makes the pixels more colorful, with a default value of 6.<br><br>OPTIONAL: \<radius\> determines how many adjacent frames each frame looks at to consider how much a pixel has changed by. By default the value is 1.<br><br>NOTE: a higher \<radius\> causes more frames to drop at the start and end of the video. | `!amplify 15`<br><br>`!amplify 15 30`
 | audioblend | `!audioblend` | | Blend the audio in the second to most recent video with the audio from the most recent video. | `!audioblend` |
 | audioswap | `!audioswap` | | Swap the audio in the second to most recent video with the audio from the most recent video. | `!audioswap` |
 | backwards | `!backwards` | | Reverse the video. | `!backwards` |
@@ -39,7 +42,7 @@ Example: `!saturate 5` can also be sent as `!saturation 5`<br><br>
 | Command | Format | Min/Max Values | Description | Examples |
 | --- | --- | --- | --- | --- |
 | corrupt | `!corrupt <intensity>` | `0 to 1` | Set random bytes in the video file to a random number. | `!corrupt 0.7` |
-| mosh | `!mosh` | | Datamoshing, using `tomato.py`. | `!mosh` |
+| mosh | `!mosh <max_iframe_interval> <qmin>` | max_iframe_interval: `2 to inf`<br><br>qmin: `5 to 60` | Datamosh the video, parameters are optional. Maximum distance between iframes can be set with `<max_iframe_interval>`, by default it's 30. You can also set the minimum quantizer scale with `<qmin>`, which also sets qmax to four times that amount. `qmin` default is 25. | `!mosh`<br><br>`!mosh 15`<br><br>`!mosh 99999 40` |
 | rearrange | `!rearrange <intensity>` | `0 to 1` | Swap random chunks of bytes in the video. A higher \<intensity\> does more swaps and makes the chunks longer. | `!rearrange 0.4` |
 | smear | `!smear` | | Makes a cool smearing effect, using `tomato.py`. | `!smear` |
 | stutter | `!stutter` | | Repeats random chunks of bytes back-to-back in various places. A bit like `!smear`, but not as smooth. | `!stutter` |
@@ -56,7 +59,7 @@ Example: `!saturate 5` can also be sent as `!saturation 5`<br><br>
 | ifunny | `!ifunny` | | Add an iFunny watermark. | `!ifunny` |
 | mp3 | `!mp3` | | Convert video to an mp3. | `!mp3`|
 | pingpong | `!pingpong` | | Plays the video, then plays it in reverse. | `!pingpong` |
-| rainbow | `!rainbow <speed>` | `-inf to inf` | Makes the hue change over time, creating a rainbow effect. By default it's 360 degrees per second, you can multiply this speed by \<speed\>. | `!rainbow 2` |
+| rainbow | `!rainbow <speed>` | `-inf to inf` | Makes the hue change over time, creating a rainbow effect. By default it's 360 degrees per second, you can multiply this speed by \<speed\>. | `!rainbow`<br><br>`!rainbow 2` |
 | text | `!text <top_text>\|<bottom_text>` | | Adds captions to the top and bottom of the video. You separate \<top_text\> and \<bottom_text\> with a pipe symbol `\|`. | `!text this will be on top\|and this will be on the bottom`<br><br>`!text this will only be on top`<br><br>`!text \|this will only be on the bottom` |
 | tutorial | `!tutorial <top_text>\|<bottom_text>` | | Converts the video into an old-school YouTube tutorial made with Windows Movie Maker. You can customize the title screen's \<top_text\> and \<bottom_text\> the same way you would with the !text command. If no top text is provided, a randomized title is chosen. If no bottom text is provided, "By your_username" is chosen. | `!tutorial how to download google chrome\|working 2010` |
 <br>

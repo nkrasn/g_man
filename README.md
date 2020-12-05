@@ -1,6 +1,6 @@
 # g_man
 A Discord bot for editing videos, useful for simple edits or making memes. It can apply filters, modify bitrate, and create glitch art. <br>
-Filters are applied using FFMPEG. Some commands use tomato.py (https://github.com/itsKaspar/tomato)
+Filters are applied using FFMPEG, with some corruption commands using tomato.py (https://github.com/itsKaspar/tomato) or AviGlitch (https://github.com/ucnv/aviglitch).
 
 ## Features
 * Change video and audio bitrate.
@@ -22,6 +22,7 @@ You can get this link from within Discord by sending "!help" in a channel
 * Static build of ffmpeg (version 4.2 or above)
 * ffmpeg-python
 * youtube_dl
+* AviGlitch, see https://github.com/ucnv/aviglitch for installation instructions.
 
 At the moment, it is required to have a folder called ffmpeg4-2-2 in the root of the bot's directory containing a static build of ffmpeg. Despite the name, any version of ffmpeg at or above 4.2 can be used (folder name will be changed in a future update). <br>
 

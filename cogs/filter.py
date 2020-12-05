@@ -391,7 +391,8 @@ class Filter(commands.Cog):
         vstream = target_input.video
         if(kwargs['blend']):
             astream = ffmpeg.filter([target_input.audio, astream], 'amix')
-        return (vstream, astream, {'shortest':None, 'vcodec':'copy'})
+        #return (vstream, astream, {'shortest':None, 'vcodec':'copy'})
+        return (vstream, astream, {'vcodec':'copy'})
     @commands.command()
     async def audioblend(self, ctx):
         target_filepath, is_yt, result = await media_cache.download_nth_video(ctx, 1)
