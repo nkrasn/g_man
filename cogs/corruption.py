@@ -42,12 +42,12 @@ class Corruption(commands.Cog):
         os.remove(filename)
         os.rename(temp_filename, filename)
     @commands.command(pass_context=True)
-    async def mosh(self, ctx, g : int = 30, q : int = 25):
+    async def mosh(self, ctx, g : int = 30):
         g = max(2, g)
-        q = min(60, max(5, q))
         #qmin = min(99, max(5, qmin))
         #avi_kwargs = {'vcodec':'mpeg4', 'vtag':'xvid', 'bf':0, 'g':g, 'qmin':qmin, 'qmax':100}
-        avi_kwargs = {'vcodec':'mpeg4', 'vtag':'xvid', 'bf':0, 'g':g, 'qmin':q, 'qmax':q*4, 'keyint_min':g, 'mbd':'rd', 'ssim_acc':4, 'force_key_frames':f'expr:gte(t,n_forced*{g})', 'me_method':'log'}
+        #avi_kwargs = {'vcodec':'mpeg4', 'vtag':'xvid', 'bf':0, 'g':g, 'qmin':q, 'qmax':q*4, 'keyint_min':g, 'mbd':'rd', 'ssim_acc':4, 'force_key_frames':f'expr:gte(t,n_forced*{g})', 'me_method':'log'}
+        avi_kwargs = {'vcodec':'mpeg4', 'vtag':'xvid', 'bf':0, 'g':g, 'keyint_min':g, 'mbd':'rd', 'ssim_acc':4, 'force_key_frames':f'expr:gte(t,n_forced*{g})', 'me_method':'log'}
         mp4_kwargs = {}
         await video_creator.apply_corruption_and_send(ctx, self._mosh, {}, avi_kwargs, mp4_kwargs)
     
