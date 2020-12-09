@@ -91,7 +91,6 @@ for ex in extensions:
     
 # Help command
 @bot.command()
-@bot_info.is_owner()
 async def help(ctx):
     await ctx.send('https://github.com/nkrasn/g_man/blob/master/COMMANDS.md')
 
