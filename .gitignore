@@ -8,6 +8,7 @@ tutorial/*
 fonts/*
 clips/*
 ffmpeg4-2-2/*
+ffmpeg-static/*
 
 !tutorial/bg.mp4
 !clips/hypercam.jpg

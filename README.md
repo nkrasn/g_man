@@ -24,12 +24,12 @@ You can get this link from within Discord by sending "!help" in a channel
 * youtube_dl
 * AviGlitch, see https://github.com/ucnv/aviglitch for installation instructions.
 
-At the moment, it is required to have a folder called ffmpeg4-2-2 in the root of the bot's directory containing a static build of ffmpeg. Despite the name, any version of ffmpeg at or above 4.2 can be used (folder name will be changed in a future update). <br>
+At the moment, it is required to have a folder called ffmpeg-static in the root of the bot's directory containing a static build of ffmpeg. <br>
 
 ## Installation
 * Install all requirements.
 * Create the following folders in the bot's root directory, if they don't exist:
-  * ffmpeg4-2-2
+  * ffmpeg-static
     * This should contain a static build of ffmpeg.
   * vids
     * This is the output directory for ffmpeg.
