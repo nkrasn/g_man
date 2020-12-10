@@ -60,13 +60,13 @@ class Bitrate(commands.Cog):
                 print(input_vid)
                 stream = ffmpeg.input(input_vid)
                 stream = ffmpeg.output(stream, 'vids/out.mp4', fs='7M', **bitrates_dict)
-                ffmpeg.run(stream, cmd='ffmpeg4-2-2/ffmpeg', overwrite_output=True)
+                ffmpeg.run(stream, cmd='ffmpeg-static/ffmpeg', overwrite_output=True)
                 '''
                 (
                     ffmpeg
                     .input('vids/out.mp4')
                     .output('vids/out.mp4', bitrates_dict)
-                    .run(cmd='ffmpeg4-2-2/ffmpeg')
+                    .run(cmd='ffmpeg-static/ffmpeg')
                 )'''
                 await ctx.send(file=discord.File('vids/out.mp4'))
             except Exception as e:

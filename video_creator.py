@@ -48,7 +48,7 @@ async def apply_filters_and_send(ctx, code, kwargs):
                 ffmpeg_output = ffmpeg.output(input_stream_a, output_filename, **output_params)
             else:
                 ffmpeg_output = ffmpeg.output(input_stream_a, input_stream_v, output_filename, **output_params)
-            ffmpeg_output.run(cmd='ffmpeg4-2-2/ffmpeg', overwrite_output=True)
+            ffmpeg_output.run(cmd='ffmpeg-static/ffmpeg', overwrite_output=True)
 
             await set_progress_bar(ctx, 3)
             await ctx.send(file=discord.File(output_filename))
@@ -92,7 +92,7 @@ async def apply_corruption_and_send(ctx, code, code_kwargs, avi_kwargs = {}, mp4
                 ffmpeg
                 .input(input_vid)
                 .output(avi_filename, fs='7M', **avi_kwargs)#qmin=30, qmax=30, g=2500, keyint_min=2500)#**x264_params)
-                .run(cmd='ffmpeg4-2-2/ffmpeg', overwrite_output=True)
+                .run(cmd='ffmpeg-static/ffmpeg', overwrite_output=True)
             )
 
             successful_corrupt = True
@@ -109,7 +109,7 @@ async def apply_corruption_and_send(ctx, code, code_kwargs, avi_kwargs = {}, mp4
                     ffmpeg
                     .input(avi_filename)
                     .output(output_filename, fs='7M', **mp4_kwargs)
-                    .run(cmd='ffmpeg4-2-2/ffmpeg', overwrite_output=True)
+                    .run(cmd='ffmpeg-static/ffmpeg', overwrite_output=True)
                 )
                 await set_progress_bar(ctx, 3)
                 await ctx.send(file=discord.File(output_filename))

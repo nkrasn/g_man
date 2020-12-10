@@ -36,17 +36,17 @@ pip3 install -r requirements.txt
 
 All other requirements should be install manually.
 
-At the moment, it is required to have a folder called ffmpeg4-2-2 in the root of the bot's directory containing a static build of ffmpeg. Despite the name, any version of ffmpeg at or above 4.2 can be used (folder name will be changed in a future update). <br>
+At the moment, it is required to have a folder called ffmpeg-static in the root of the bot's directory containing a static build of ffmpeg. <br>
 
 ## Installation
 * Install all requirements.
 * Create the following folders in the bot's root directory, if they don't exist:
-  * ffmpeg4-2-2
+  * ffmpeg-static
     * This should contain a static build of ffmpeg.
   * vids
     * This is the output directory for ffmpeg.
   * fonts
-    * Drag an Arial .ttf file in here, and any other fontfile you want.
+    * Drag an Arial and Impact .ttf file in here, and any other fontfile you want. Arial is needed for the `!tutorial` command and Impact is needed for `!text`.
   * tutorial
     * Drag any .mp3 background music you want for the !tutorial command (such as "Trance - 009 Sound System Dreamscape" or "Evanescence - Bring Me to Life")
   * clips
