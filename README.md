@@ -34,7 +34,7 @@ At the moment, it is required to have a folder called ffmpeg-static in the root 
   * vids
     * This is the output directory for ffmpeg.
   * fonts
-    * Drag an Arial .ttf file in here, and any other fontfile you want.
+    * Drag an Arial and Impact .ttf file in here, and any other fontfile you want. Arial is needed for the `!tutorial` command and Impact is needed for `!text`.
   * tutorial
     * Drag any .mp3 background music you want for the !tutorial command (such as "Trance - 009 Sound System Dreamscape" or "Evanescence - Bring Me to Life")
   * clips
