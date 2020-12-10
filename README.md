@@ -24,6 +24,18 @@ You can get this link from within Discord by sending "!help" in a channel
 * youtube_dl
 * AviGlitch, see https://github.com/ucnv/aviglitch for installation instructions.
 
+You can install the python packages easily, preferably in a virtual environment, by running
+```
+pip install -r requirements.txt
+```
+
+*Tip:* If you using Mac or Linux, you may have Python 2/Pip 2 preinstalled. You should run:
+```
+pip3 install -r requirements.txt
+```
+
+All other requirements should be install manually.
+
 At the moment, it is required to have a folder called ffmpeg-static in the root of the bot's directory containing a static build of ffmpeg. <br>
 
 ## Installation
