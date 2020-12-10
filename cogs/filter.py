@@ -402,6 +402,9 @@ class Filter(commands.Cog):
         if(os.path.isfile(target_filepath)):
             os.remove(target_filepath)
     @commands.command()
+    async def audiomerge(self, ctx):
+        await self.audioblend(ctx)
+    @commands.command()
     async def audioswap(self, ctx):
         target_filepath, is_yt, result = await media_cache.download_nth_video(ctx, 1)
         if(not result):
