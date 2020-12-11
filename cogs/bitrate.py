@@ -9,70 +9,58 @@ import json
 import re
 import os
 import ffmpeg
+import video_creator
 
 class Bitrate(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
     
+    def clamp_bitrate(self, br):
+        if(br is None):
+            return None
+        br = br.lower()
+        if(re.match(r'[0-9]+(\.[0-9]+)?k?$', br) is None):
+            return None
 
-    @commands.command(pass_context=True)
-    async def vb(self, ctx, bitrate : int):
-        await self.execute_command(ctx, bitrate, None)
+        br_num = float(br.replace('k',''))
+        if('k' in br):
+            br_num *= 1000
+        br_num = int(br_num)
+
+        return max(1000, min(br_num, 200000))
+
+    async def _b(self, ctx, vstream, astream, kwargs):
+        # All that's needed is to pass the bitrate output params stored in kwargs
+        return vstream, astream, kwargs
+    @commands.command()
+    async def b(self, ctx, vid_bitrate, audio_bitrate):
+        vid_bitrate = self.clamp_bitrate(vid_bitrate)
+        audio_bitrate = self.clamp_bitrate(audio_bitrate)
         
-    @commands.command(pass_context=True)
-    async def ab(self, ctx, bitrate : int):
-        await self.execute_command(ctx, None, bitrate)
-    
-    @commands.command(pass_context=True)
-    async def b(self, ctx, vbitrate : int, abitrate : int):
-        await self.execute_command(ctx, vbitrate, abitrate)
-
-
-
-
-
-    # Run bitrate commands
-    async def execute_command(self, ctx, vbitrate, abitrate):
-        if(vbitrate is None and abitrate is None):
+        if(vid_bitrate is None and audio_bitrate is None):
+            await ctx.send('Invalid bitrate. Try a value such as 4.3k (or 4300) or 25k (or 25000)')
             return
+        bitrate_kwargs = {}
+        if(vid_bitrate is not None):
+            bitrate_kwargs['b:v'] = vid_bitrate
+        if(audio_bitrate is not None):
+            bitrate_kwargs['b:a'] = audio_bitrate
 
-        # Determine if the source should be an attachment or youtube video
-        input_vid = media_cache.get_from_cache(str(ctx.message.channel.id))[-1]
-        is_yt = False
-        if(input_vid is None): # no video found in the channel
-            await ctx.send("Didn't find any videos to modify...")
-            return
-        elif(re.match(media_cache.yt_regex, input_vid)): # yt video
-            is_yt = True
-            result, input_vid = await media_cache.yt(ctx, input_vid, '0')
-            if(not result):
-                await ctx.send("Quitting :(")
-                return
+        await video_creator.apply_filters_and_send(ctx, self._b, bitrate_kwargs)
 
-        bitrates_dict = {}
-        if(vbitrate is not None):
-            bitrates_dict['b:v'] = min(vbitrate, 10000000)
-        if(abitrate is not None):
-            bitrates_dict['b:a'] = min(abitrate, 10000000)
-        #await ctx.send("I will get back to you...")
-        async with ctx.typing():
-            try:
-                print(input_vid)
-                stream = ffmpeg.input(input_vid)
-                stream = ffmpeg.output(stream, 'vids/out.mp4', fs='7M', **bitrates_dict)
-                ffmpeg.run(stream, cmd='ffmpeg-static/ffmpeg', overwrite_output=True)
-                '''
-                (
-                    ffmpeg
-                    .input('vids/out.mp4')
-                    .output('vids/out.mp4', bitrates_dict)
-                    .run(cmd='ffmpeg-static/ffmpeg')
-                )'''
-                await ctx.send(file=discord.File('vids/out.mp4'))
-            except Exception as e:
-                await ctx.send('Error:\n```\n' + str(e) + '```')
-            if(is_yt):
-                os.remove(input_vid)
+    @commands.command()
+    async def vb(self, ctx, vid_bitrate):
+        await self.b(ctx, vid_bitrate, None)
+
+    @commands.command()
+    async def ab(self, ctx, audio_bitrate):
+        await self.b(ctx, None, audio_bitrate)
+
+
+
+
+
+
 
 def setup(bot):
     bot.add_cog(Bitrate(bot))

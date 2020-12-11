@@ -4,11 +4,12 @@ Some commands may be listed as having multiple names, this means they are the sa
 Example: `!saturate 5` is the same as `!saturation 5`<br><br>
 
 # Bitrate
+_Note_: You can use `k` for kilobits in your parameters. Examples: `4.3k` instead of `4300`, `25k` instead of `25000`.
 | Command | Format | Min/Max Values | Description | Examples |
 | --- | --- | --- | --- | --- |
-| vb | `!vb <bitrate>` | `8000 to 200000` | Set the video bitrate. | `!vb 30000` |
-| ab | `!ab <bitrate>` | `8000 to 200000` | Set the audio bitrate. | `!ab 50000` |
-| b | `!b <video_bitrate> <audio_bitrate>` | video_bitrate: `8000 to 200000`<br>audio_bitrate: `8000 to 200000` | Set the video and audio bitrate. | `!b 30000 50000` |
+| vb | `!vb <bitrate>` | `1000 to 200000` | Set the video bitrate. | `!vb 30k` |
+| ab | `!ab <bitrate>` | `1000 to 200000` | Set the audio bitrate. | `!ab 50k` |
+| b | `!b <video_bitrate> <audio_bitrate>` | video_bitrate: `1000 to 200000`<br>audio_bitrate: `1000 to 200000` | Set the video and audio bitrate. | `!b 30k 50k` |
 <br>
 
 # Filters
