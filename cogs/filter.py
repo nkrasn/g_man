@@ -567,6 +567,41 @@ class Filter(commands.Cog):
     async def gamma(self, ctx, gamma : float = 1.3):
         gamma = max(0.1, min(gamma, 10))
         await video_creator.apply_filters_and_send(ctx, self._gamma, {'gamma':gamma})
+    
+
+    async def _greenscreen(self, ctx, vstream, astream, kwargs):
+        vgreen = vstream
+        agreen = astream
+        stream = ffmpeg.input(kwargs['first_vid_filepath'])
+        vstream = stream.video
+        astream = stream.audio
+
+        vgreen = (
+            vgreen
+            .filter('scale', w=480, h=320)
+            .filter('setsar', r='1:1')
+            .filter('colorkey', color=kwargs['color'], similarity=kwargs['similarity'])
+        )
+        vstream = (
+            vstream
+            .filter('scale', w=480, h=320)
+            .filter('setsar', r='1:1')
+        )
+        vstream = ffmpeg.overlay(vstream, vgreen, x=0, y=0)
+        astream = ffmpeg.filter([astream, agreen], 'amix')
+
+        return vstream, astream, {}
+    @commands.command()
+    async def greenscreen(self, ctx, color : str = '#00ff00', similarity : float = 0.3):
+        similarity = max(0.01, min(similarity, 1))
+        #blend = max(0, min(blend, 1))
+
+        first_vid_filepath, is_yt, result = await media_cache.download_nth_video(ctx, 1)
+        if(not result):
+            return
+        await video_creator.apply_filters_and_send(ctx, self._greenscreen, {'first_vid_filepath':first_vid_filepath, 'color':color, 'similarity':similarity})
+        if(os.path.isfile(first_vid_filepath)):
+            os.remove(first_vid_filepath)
 
         
     async def _hue(self, ctx, vstream, astream, kwargs):
