@@ -42,7 +42,7 @@ Example: `!saturate 5` is the same as `!saturation 5`<br><br>
 | Command | Format | Min/Max Values | Description | Examples |
 | --- | --- | --- | --- | --- |
 | corrupt | `!corrupt <intensity>` | `0 to 1` | Set random bytes in the video file to a random number. | `!corrupt 0.7` |
-| mosh | `!mosh <max_iframe_interval> <qmin>` | max_iframe_interval: `2 to inf`<br> | Datamosh the video. Maximum distance between iframes can be set with `<max_iframe_interval>`, by default it's 30| `!mosh`<br><br>`!mosh 15` |
+| mosh | `!mosh <max_iframe_interval>` | `2 to inf`<br> | Datamosh the video. Maximum distance between iframes can be set with `<max_iframe_interval>`, by default it's 30| `!mosh`<br><br>`!mosh 15` |
 | rearrange | `!rearrange <intensity>` | `0 to 1` | Swap random chunks of bytes in the video. A higher \<intensity\> does more swaps and makes the chunks longer. | `!rearrange 0.4` |
 | smear | `!smear` | | Makes a cool smearing effect, using `tomato.py`. | `!smear` |
 | stutter | `!stutter` | | Repeats random chunks of bytes back-to-back in various places. A bit like `!smear`, but not as smooth. | `!stutter` |
