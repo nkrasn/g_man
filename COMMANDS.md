@@ -34,7 +34,7 @@ _Note_: You can use `k` for kilobits in your parameters. Examples: `4.3k` instea
 | lagfun | `!lagfun <amount>` | `0 to 1` | Makes darker pixels update slower. This can create an interesting smearing effect with lighter pixels. A higher \<amount\> makes the smearing last longer, with a value of 1 causing bright colors to never disappear. Values close to 0.96 create very noticable results. | `!lagfun 0.99` |
 | loop | `!loop <amount>` | `2 to 20` | Loop the video. | `!loop 5` |
 | saturate<br>saturation | `!saturate <amount>` | `-10 to 10` | Saturate the video. | `!saturate 2` |
-| scale | `!scale <width> <height>` | `50 to 1240` | Scale the video. You can maintain aspect ratio by setting \<width\> or \<height\> to auto. By default, \<width\>=360 and \<height\>=270. | `!scale 640 auto` |
+| scale | `!scale <width> <height>` | `50 to 1240` | Scale the video. You can preserve the aspect ratio by setting \<width\> or \<height\> to auto. By default, \<width\>=480 and \<height\>=auto. | `!scale 640 480`<br><br>`!scale 240`<br><br>`!scale auto 720` |
 | speed | `!speed <amount>` | `0.05 to inf` | Change the speed of the video. | `!speed 2` |
 | volume | `!volume <amount>` | `-inf to inf` | Increase/decrease volume. A value of 1 does no change. | `!volume 5` |
 | wobble | `!wobble <frequency>` | `More than 0` | Make the audio wobbly. | `!wobble 15` |

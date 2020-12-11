@@ -670,7 +670,7 @@ class Filter(commands.Cog):
         )
         return vstream, astream, {}
     @commands.command(pass_context=True)
-    async def scale(self, ctx, w : str = '360', h : str = '270'):
+    async def scale(self, ctx, w : str = '480', h : str = 'auto'):
         if(w == 'auto' and h == 'auto'):
             return
         
