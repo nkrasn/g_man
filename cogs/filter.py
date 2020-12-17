@@ -570,11 +570,9 @@ class Filter(commands.Cog):
     
 
     async def _greenscreen(self, ctx, vstream, astream, kwargs):
-        vgreen = vstream
-        agreen = astream
-        stream = ffmpeg.input(kwargs['first_vid_filepath'])
-        vstream = stream.video
-        astream = stream.audio
+        green_stream = ffmpeg.input(kwargs['first_vid_filepath'])
+        vgreen = green_stream.video
+        agreen = green_stream.audio
 
         vgreen = (
             vgreen
