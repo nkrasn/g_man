@@ -38,6 +38,7 @@ _Note_: You can use `k` for kilobits in your parameters. Examples: `4.3k` instea
 | speed | `!speed <amount>` | `0.05 to inf` | Change the speed of the video. | `!speed 2` |
 | volume | `!volume <amount>` | `-inf to inf` | Increase/decrease volume. A value of 1 does no change. | `!volume 5` |
 | wobble | `!wobble <frequency>` | `More than 0` | Make the audio wobbly. | `!wobble 15` |
+| zoom | `!wobble <zoom_amount>` | `1 to 8` | Zoom in the video. | `!zoom 1.5` |
 <br>
 
 # Corruption

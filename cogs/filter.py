@@ -722,6 +722,20 @@ class Filter(commands.Cog):
     async def wobble(self, ctx, speed : str = '8'):
         await video_creator.apply_filters_and_send(ctx, self._wobble, {'speeds':speed})
 
+    
+    async def _zoom(self, ctx, vstream, astream, kwargs):
+        zoom_amount = kwargs['zoom_amount']
+        vstream = (
+            vstream
+            .filter('scale', w=f'{zoom_amount}*iw', h=-2)
+            .filter('crop', w=f'iw/{zoom_amount}', h=f'ih/{zoom_amount}')
+        )
+        return vstream, astream, {}
+    @commands.command()
+    async def zoom(self, ctx, zoom_amount: float = 2.0):
+        zoom_amount = min(8, max(1, zoom_amount))
+        await video_creator.apply_filters_and_send(ctx, self._zoom, {'zoom_amount':zoom_amount})
+
 
 
 
