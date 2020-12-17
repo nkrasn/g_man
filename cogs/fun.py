@@ -21,12 +21,15 @@ class Fun(commands.Cog):
         self.vc = None
 
 
-    async def _americ(self, ctx, vstream, astream, kwargs):
-        astream = ffmpeg.input('clips/americ.mp3')
+    async def _replace_audio(self, ctx, vstream, astream, kwargs):
+        audio_filename = kwargs['audio_filename']
+        astream = ffmpeg.input(f'clips/{audio_filename}')
         return (vstream, astream, {'shortest':None, 'vcodec':'copy'})
+
+
     @commands.command(pass_context=True)
     async def americ(self, ctx):
-        await video_creator.apply_filters_and_send(ctx, self._americ, {})
+        await video_creator.apply_filters_and_send(ctx, self._replace_audio, {'audio_filename':'americ.mp3'})
     
 
     async def _cartoony(self, ctx, vstream, astream, kwargs):
@@ -104,6 +107,11 @@ class Fun(commands.Cog):
     @commands.command(pass_context=True)
     async def rainbow(self, ctx, speed : float = 1):
         await video_creator.apply_filters_and_send(ctx, self._rainbow, {'h':f't*{speed*360}'})
+
+
+    @commands.command(pass_context=True)
+    async def tetris(self, ctx):
+        await video_creator.apply_filters_and_send(ctx, self._replace_audio, {'audio_filename':'tetris.mp3'})
 
     
     async def _text(self, ctx, vstream, astream, kwargs):
