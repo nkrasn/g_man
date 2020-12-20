@@ -379,7 +379,7 @@ class Filter(commands.Cog):
     
 
     async def _amplify(self, ctx, vstream, astream, kwargs):
-        vstream = vstream.filter('amplify', **kwargs)
+        vstream = vstream.filter('amplify', radius=kwargs['radius'], factor=kwargs['factor'])
         return vstream, astream, {}
     @commands.command(pass_context=True)
     async def amplify(self, ctx, factor : float = 6, radius : float = 1):
@@ -424,7 +424,7 @@ class Filter(commands.Cog):
 
 
     async def _blur(self, ctx, vstream, astream, kwargs):
-        vstream = vstream.filter('median', **kwargs)
+        vstream = vstream.filter('median', radius=kwargs['radius'])
         return vstream, astream, {}
     @commands.command(pass_context=True)
     async def blur(self, ctx, radius : float = 10): # supposed to be int lmao
@@ -433,7 +433,7 @@ class Filter(commands.Cog):
     
 
     async def _brightness(self, ctx, vstream, astream, kwargs):
-        vstream = vstream.filter('eq', **kwargs)
+        vstream = vstream.filter('eq', brightness=kwargs['brightness'])
         return vstream, astream, {}
     @commands.command(pass_context=True)
     async def brightness(self, ctx, brightness : str = '1'):
@@ -476,7 +476,7 @@ class Filter(commands.Cog):
 
 
     async def _contrast(self, ctx, vstream, astream, kwargs):
-        vstream = vstream.filter('eq', **kwargs)
+        vstream = vstream.filter('eq', contrast=kwargs['contrast'])
         return vstream, astream, {}
     @commands.command(pass_context=True)
     async def contrast(self, ctx, contrast : float = 10):
@@ -493,6 +493,8 @@ class Filter(commands.Cog):
 
 
     async def _equalizer(self, ctx, vstream, astream, kwargs):
+        kwargs_no_input_filename = kwargs
+        del kwargs['input_filename']
         astream = astream.filter('superequalizer', **kwargs)
         return vstream, astream, {}
     @commands.command(pass_context=True)
@@ -553,7 +555,7 @@ class Filter(commands.Cog):
     
 
     async def _fps(self, ctx, vstream, astream, kwargs):
-        vstream = vstream.filter('fps', **kwargs)
+        vstream = vstream.filter('fps', fps=kwargs['fps'])
         return vstream, astream, {}
     @commands.command(pass_context=True)
     async def fps(self, ctx, framerate=15):
@@ -561,7 +563,7 @@ class Filter(commands.Cog):
     
 
     async def _gamma(self, ctx, vstream, astream, kwargs):
-        vstream = vstream.filter('eq', **kwargs)
+        vstream = vstream.filter('eq', gamma=kwargs['gamma'])
         return vstream, astream, {}
     @commands.command(pass_context=True)
     async def gamma(self, ctx, gamma : float = 1.3):
@@ -603,7 +605,7 @@ class Filter(commands.Cog):
 
         
     async def _hue(self, ctx, vstream, astream, kwargs):
-        vstream = vstream.filter('hue', **kwargs)
+        vstream = vstream.filter('hue', h=kwargs['h'])
         return vstream, astream, {}
     @commands.command(pass_context=True)
     async def hue(self, ctx, degrees : str):
@@ -628,7 +630,7 @@ class Filter(commands.Cog):
 
 
     async def _lagfun(self, ctx, vstream, astream, kwargs):
-        vstream = vstream.filter('lagfun', **kwargs)
+        vstream = vstream.filter('lagfun', decay=kwargs['decay'])
         return vstream, astream, {}
     @commands.command()
     async def lagfun(self, ctx, decay : float = 0.99):
@@ -649,7 +651,7 @@ class Filter(commands.Cog):
 
 
     async def _saturation(self, ctx, vstream, astream, kwargs):
-        vstream = vstream.filter('hue', **kwargs)
+        vstream = vstream.filter('hue', s=kwargs['s'])
         return vstream, astream, {}
     @commands.command(pass_context=True)
     async def saturation(self, ctx, saturation : float = 10):
@@ -663,7 +665,7 @@ class Filter(commands.Cog):
     async def _scale(self, ctx, vstream, astream, kwargs):
         vstream = (
             vstream
-            .filter('scale', **kwargs)
+            .filter('scale', w=kwargs['w'], h=kwargs['h'])
             .filter('setsar', r='1:1')
         )
         return vstream, astream, {}
@@ -708,15 +710,15 @@ class Filter(commands.Cog):
     
 
     async def _volume(self, ctx, vstream, astream, kwargs):
-        astream = astream.filter('volume', **kwargs)
+        astream = astream.filter('volume', volume=kwargs['volume'], precision='fixed')
         return vstream, astream, {}
     @commands.command(pass_context=True)
     async def volume(self, ctx, volume_db : float):
-        await video_creator.apply_filters_and_send(ctx, self._volume, {'volume':volume_db, 'precision': 'fixed'})    
+        await video_creator.apply_filters_and_send(ctx, self._volume, {'volume':volume_db})    
 
 
     async def _wobble(self, ctx, vstream, astream, kwargs):
-        astream = astream.filter('chorus', delays='80ms', decays=1, depths=4, **kwargs)
+        astream = astream.filter('chorus', delays='80ms', decays=1, depths=4, speeds=kwargs['speed'])
         return vstream, astream, {}
     @commands.command(pass_context=True)
     async def wobble(self, ctx, speed : str = '8'):

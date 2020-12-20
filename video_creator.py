@@ -28,6 +28,7 @@ async def apply_filters_and_send(ctx, code, kwargs):
     is_mp3 = False
     if('is_mp3' in kwargs):
         is_mp3 = kwargs['is_mp3']
+    kwargs['input_filename'] = input_vid
             
     output_filename = f'vids/{ctx.message.id}.'
     if(is_mp3):

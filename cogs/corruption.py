@@ -30,6 +30,106 @@ class Corruption(commands.Cog):
         os.rename(f'{filename.split(".avi")[0]}{suffix}.avi', filename)
     
 
+    async def _faketime(self, ctx, output_filename, fake_type):
+        fs = open(output_filename, 'r+b')
+        filesize = os.path.getsize(output_filename)
+        
+        try:
+            if(fake_type == 'increasing'): # webm
+                duration_data = fs.read(16*32).find(b'\x2a\xd7\xb1')
+                fs.seek(duration_data)
+                duration_data += fs.read(16*32).find(b'\x44\x89') + 4
+                fs.seek(duration_data)
+                fs.write(b'\x00')
+            else: # mp4
+                # find mvhd and modify the duration data from there
+                fs.seek(filesize-40000)
+                duration_data_idx = fs.read().find(b'\x6d\x76\x68\x64') + 18
+                fs.seek(filesize-40000+duration_data_idx)
+
+                if(fake_type == 'negative'):
+                    fs.write(b'\x00\x01\xff\xff\xff\xf0')
+                elif(fake_type == 'random'):
+                    random_bytes = []
+                    for i in range(6):
+                        random_bytes.append(random.randint(0, 255))
+                    fs.write(bytes(random_bytes))
+                else: # default to 'long'
+                    fs.write(b'\x00\x01\x7f\xff\xff\xff')
+        except Exception as e:
+            print(e)
+            await ctx.send("Couldn't modify duration data :(\nSomething that might work: try running a random filter through the video (such as `!volume 1` or `!scale 480`) and try again.")
+            return False
+
+
+        fs.close()
+        return True
+    @commands.command()
+    async def faketime(self, ctx, fake_type : str = ''):
+        # doesn't seem like i can use apply_corruption_and_send here... or apply_filters_and_send
+        # so, will have to repeat code a bit
+
+        # determine type of fake time...
+        fake_types = ['long', 'negative', 'increasing']
+        if(fake_type == ''):
+            fake_type = random.choice(fake_types)
+        fake_types.append('random')
+        if(fake_type not in fake_types):
+            fake_types_str = '`' + ', '.join(fake_types) + '`'
+            await ctx.send(f"I'm not sure what you mean. Here are the types of fake time I understand:\n{fake_types_str}")
+            return
+
+        # download the video...
+        await video_creator.set_progress_bar(ctx, 0)
+        async with ctx.typing():
+            input_vid, is_yt, result = await media_cache.download_last_video(ctx)
+            if(not result):
+                await ctx.send("Error downloading the video")
+                return
+
+            output_filename = f'./vids/{ctx.message.id}.'
+            output_params = {}
+            if(fake_type == 'increasing'):
+                output_filename += 'webm'
+                # because libvpx-vp9 is slow
+                output_params['threads'] = 8
+                output_params['cpu-used'] = 8
+            else:
+                output_filename += 'mp4'
+
+            (
+                ffmpeg
+                .input(input_vid)
+                .output(output_filename, fs='7M', **output_params)
+                .run(cmd='ffmpeg-static/ffmpeg', overwrite_output=True)
+            )
+        await video_creator.set_progress_bar(ctx, 1)
+
+        # apply corrupted timestamp...
+        was_successful = True
+        async with ctx.typing():
+            was_successful = await self._faketime(ctx, output_filename, fake_type)
+        await video_creator.set_progress_bar(ctx, 2)
+
+        # send vid...
+        if(was_successful):
+            await video_creator.set_progress_bar(ctx, 3)
+            await ctx.send(file=discord.File(output_filename))
+
+        # Remove files
+        try:
+            if(os.path.isfile(output_filename)):
+                os.remove(output_filename)
+        except Exception as e:
+            print(e)
+        try:
+            if(is_yt):
+                os.remove(input_vid)
+        except Exception as e:
+            print(e)
+        await ctx.message.clear_reactions()
+    
+
     async def _mosh(self, ctx, filename, kwargs):
         #k = kwargs['k']
         #await self._tomato(filename, f'-m void -k {k}', '-void')

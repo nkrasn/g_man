@@ -45,6 +45,7 @@ _Note_: You can use `k` for kilobits in your parameters. Examples: `4.3k` instea
 | Command | Format | Min/Max Values | Description | Examples |
 | --- | --- | --- | --- | --- |
 | corrupt | `!corrupt <intensity>` | `0 to 1` | Set random bytes in the video file to a random number. | `!corrupt 0.7` |
+| faketime | `!faketime <type>` | | Corrupt the duration data. This can make videos look like they have an extremely long, negative, or perpetually increasing duration. A random one is chosen if `<type>` isn't specified.<br><br>Possible values for `<type>`:<br>- `long`: Duration appears as 357913994:07.<br>- `negative`: Duration appears as -16.<br>- `increasing`: Duration keeps increasing.<br>- `random`: Randomize the duration data. This is unstable and can actually shorten the video, it won't be chosen if you don't provide a `<type>`. | `!faketime`<br><br>`!faketime long`<br><br>`!faketime negative`<br><br>`!faketime increasing`<br><br>`!faketime random`
 | mosh | `!mosh <max_iframe_interval>` | `2 to inf`<br> | Datamosh the video. Maximum distance between iframes can be set with `<max_iframe_interval>`, by default it's 30| `!mosh`<br><br>`!mosh 15` |
 | rearrange | `!rearrange <intensity>` | `0 to 1` | Swap random chunks of bytes in the video. A higher \<intensity\> does more swaps and makes the chunks longer. | `!rearrange 0.4` |
 | smear | `!smear` | | Makes a cool smearing effect, using `tomato.py`. | `!smear` |
@@ -65,6 +66,7 @@ _Note_: You can use `k` for kilobits in your parameters. Examples: `4.3k` instea
 | rainbow | `!rainbow <speed>` | `-inf to inf` | Makes the hue change over time, creating a rainbow effect. By default it's 360 degrees per second, you can multiply this speed by \<speed\>. | `!rainbow`<br><br>`!rainbow 2` |
 | tetris | `!tetris` | | Replaces the video's audio with the vocoded version of tetris beatbox. | `!tetris` |
 | text | `!text <top_text>\|<bottom_text>` | | Adds captions to the top and bottom of the video. You separate \<top_text\> and \<bottom_text\> with a pipe symbol `\|`. | `!text this will be on top\|and this will be on the bottom`<br><br>`!text this will only be on top`<br><br>`!text \|this will only be on the bottom` |
+| trippy | `!trippy <speed> <blend_mode>` | speed: `0.5 to 1` | Overlays and blends a slowed down version of the video on top of itself. You can control the `<speed>` of the overlay, by default it's `0.97`.<br><br>`<blend_mode>` specifies how the videos blend together, by default it's set to `average`. A full list of blend modes can be found here: https://ffmpeg.org/ffmpeg-filters.html#blend-1 | `!trippy`<br><br>`!trippy 0.7`<br><br>`!trippy 0.8 xor` |
 | tutorial | `!tutorial <top_text>\|<bottom_text>` | | Converts the video into an old-school YouTube tutorial made with Windows Movie Maker. You can customize the title screen's \<top_text\> and \<bottom_text\> the same way you would with the !text command. If no top text is provided, a randomized title is chosen. If no bottom text is provided, "By your_username" is chosen. | `!tutorial how to download google chrome\|working 2010` |
 <br>
 

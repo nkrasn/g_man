@@ -102,7 +102,7 @@ class Fun(commands.Cog):
     
 
     async def _rainbow(self, ctx, vstream, astream, kwargs):
-        vstream = vstream.filter('hue', **kwargs)
+        vstream = vstream.filter('hue', h=kwargs['h'])
         return vstream, astream, {}
     @commands.command(pass_context=True)
     async def rainbow(self, ctx, speed : float = 1):
@@ -144,6 +144,24 @@ class Fun(commands.Cog):
             top_msg = msg[0]
             bot_msg = msg[1]
         await video_creator.apply_filters_and_send(ctx, self._text, {'top_msg':top_msg, 'bot_msg':bot_msg})
+    
+
+    async def _trippy(self, ctx, vstream, astream, kwargs):
+        input_filename = kwargs['input_filename']
+        speed = kwargs['speed']
+        blend_mode = kwargs['blend_mode']
+
+        slowed_down_video = (
+            ffmpeg
+            .input(input_filename).video
+            .filter('setpts', f'{1.0/speed}*PTS')
+        )
+        vstream = ffmpeg.filter([slowed_down_video, vstream], 'blend', all_mode=blend_mode)
+        return vstream, astream, {'shortest':None}
+    @commands.command()
+    async def trippy(self, ctx, speed : float = 0.97, blend_mode : str = 'average'):
+        speed = min(1.0, max(0.5, speed))
+        await video_creator.apply_filters_and_send(ctx, self._trippy, {'speed':speed, 'blend_mode':blend_mode})
 
 
     async def _tutorial(self, ctx, vstream, astream, kwargs):
