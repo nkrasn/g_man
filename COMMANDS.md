@@ -18,7 +18,7 @@ _Note_: You can use `k` for kilobits in your parameters. Examples: `4.3k` instea
 | amplify | `!amplify <amount> <radius>` | amount: `0 to 65535`<br><br>radius: `1 to 63` | Makes pixels more colorful the more they change. A higher \<amount\> makes the pixels more colorful, with a default value of 6.<br><br>OPTIONAL: \<radius\> determines how many adjacent frames each frame looks at to consider how much a pixel has changed by. By default the value is 1.<br><br>NOTE: a higher \<radius\> causes more frames to drop at the start and end of the video. | `!amplify 15`<br><br>`!amplify 15 30`
 | audioblend<br>audiomerge | `!audioblend` | | Blend the audio in the second to most recent video with the audio from the most recent video. | `!audioblend` |
 | audioswap | `!audioswap` | | Swap the audio in the second to most recent video with the audio from the most recent video. | `!audioswap` |
-| backwards | `!backwards` | | Reverse the video. | `!backwards` |
+| backwards<br>reverse | `!backwards` | | Reverse the video. | `!backwards` |
 | blur | `!blur <amount>` | `1 - 127` | Blur the video. \<amount\> represents the radius of the blur around each pixel. | `!blur 10` |
 | brightness | `!brightness <amount>` | `-1 to 1` | Adjust the brightness of a video. | `!brightness 2` |
 | concat<br>merge | `!concat` | | Combine the two most recently sent videos. Most recent video will be played after the second to most recent. | `!concat` |
@@ -34,11 +34,11 @@ _Note_: You can use `k` for kilobits in your parameters. Examples: `4.3k` instea
 | lagfun | `!lagfun <amount>` | `0 to 1` | Makes darker pixels update slower. This can create an interesting smearing effect with lighter pixels. A higher \<amount\> makes the smearing last longer, with a value of 1 causing bright colors to never disappear. Values close to 0.96 create very noticable results. | `!lagfun 0.99` |
 | loop | `!loop <amount>` | `2 to 20` | Loop the video. | `!loop 5` |
 | saturate<br>saturation | `!saturate <amount>` | `-10 to 10` | Saturate the video. | `!saturate 2` |
-| scale | `!scale <width> <height>` | `50 to 1240` | Scale the video. You can preserve the aspect ratio by setting \<width\> or \<height\> to auto. By default, \<width\>=480 and \<height\>=auto. | `!scale 640 480`<br><br>`!scale 240`<br><br>`!scale auto 720` |
+| scale<br>size | `!scale <width> <height>` | `50 to 1240` | Scale the video. You can preserve the aspect ratio by setting \<width\> or \<height\> to auto. By default, \<width\>=480 and \<height\>=auto. | `!scale 640 480`<br><br>`!scale 240`<br><br>`!scale auto 720` |
 | speed | `!speed <amount>` | `0.05 to inf` | Change the speed of the video. | `!speed 2` |
 | volume | `!volume <amount>` | `-inf to inf` | Increase/decrease volume. A value of 1 does no change. | `!volume 5` |
 | wobble | `!wobble <frequency>` | `More than 0` | Make the audio wobbly. | `!wobble 15` |
-| zoom | `!wobble <zoom_amount>` | `1 to 8` | Zoom in the video. | `!zoom 1.5` |
+| zoom | `!zoom <zoom_amount>` | `1 to 8` | Zoom in the video. | `!zoom 1.5` |
 <br>
 
 # Corruption

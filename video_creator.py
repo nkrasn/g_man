@@ -15,6 +15,16 @@ loading_emotes = [
 async def set_progress_bar(ctx, idx):
     await ctx.message.add_reaction(loading_emotes[idx])
 
+async def print_ffmpeg_error(ctx, e):
+    err = str(e.stderr.decode('utf8')).split('\n')
+    friendlier_err = ''
+    for line in err:
+        if(line.startswith('[') and 'Copyleft' not in line):
+            friendlier_err += '* ' + line[line.rfind(']')+2:] + '\n'
+    if(len(friendlier_err) > 1800):
+        friendlier_err = friendlier_err[:1800]
+    await ctx.send(f"An error occurred :( ```{friendlier_err}```\nIf the error doesn't make sense, try scaling the video(s) down using `!scale 480` and try again.")
+
 # Download the video, then wrap the filter code in a try catch statement
 async def apply_filters_and_send(ctx, code, kwargs):
     #await ctx.message.add_reaction('\U0001F4AC')
@@ -29,7 +39,7 @@ async def apply_filters_and_send(ctx, code, kwargs):
     if('is_mp3' in kwargs):
         is_mp3 = kwargs['is_mp3']
     kwargs['input_filename'] = input_vid
-            
+                
     output_filename = f'vids/{ctx.message.id}.'
     if(is_mp3):
         output_filename += 'mp3'
@@ -49,28 +59,31 @@ async def apply_filters_and_send(ctx, code, kwargs):
                 ffmpeg_output = ffmpeg.output(input_stream_a, output_filename, **output_params)
             else:
                 ffmpeg_output = ffmpeg.output(input_stream_a, input_stream_v, output_filename, **output_params)
-            ffmpeg_output.run(cmd='ffmpeg-static/ffmpeg', overwrite_output=True)
+            ffmpeg_output.run(cmd='ffmpeg-static/ffmpeg', overwrite_output=True, capture_stderr=True)
 
             await set_progress_bar(ctx, 3)
             await ctx.send(file=discord.File(output_filename))
         except asyncio.TimeoutError as e:
             await ctx.send(f'Command took to long to execute.\n```\n{str(e)}```')
+        # Making errors a little easier to understand
+        except ffmpeg.Error as e:
+            await print_ffmpeg_error(ctx, e)
         except Exception as e:
             await ctx.send(f'Error:\n```\n{str(e)}```')
             print(traceback.format_exc())
 
-        # Remove files
-        try:
-            if(os.path.isfile(output_filename)):
-                os.remove(output_filename)
-        except Exception as e:
-            print(e)
-        try:
-            if(is_yt):
-                os.remove(input_vid)
-        except Exception as e:
-            print(e)
-        await ctx.message.clear_reactions()
+    # Remove files
+    try:
+        if(os.path.isfile(output_filename)):
+            os.remove(output_filename)
+    except Exception as e:
+        print(e)
+    try:
+        if(is_yt):
+            os.remove(input_vid)
+    except Exception as e:
+        print(e)
+    await ctx.message.clear_reactions()
 
 
 # Convert corrupted video to mp4
@@ -110,12 +123,15 @@ async def apply_corruption_and_send(ctx, code, code_kwargs, avi_kwargs = {}, mp4
                     ffmpeg
                     .input(avi_filename)
                     .output(output_filename, fs='7M', **mp4_kwargs)
-                    .run(cmd='ffmpeg-static/ffmpeg', overwrite_output=True)
+                    .run(cmd='ffmpeg-static/ffmpeg', overwrite_output=True, capture_stderr=True)
                 )
                 await set_progress_bar(ctx, 3)
                 await ctx.send(file=discord.File(output_filename))
         except asyncio.TimeoutError as e:
             await ctx.send(f'Command took to long to execute.\n```\n{str(e)}```')
+        # Making errors a little easier to understand
+        except ffmpeg.Error as e:
+            await print_ffmpeg_error(ctx, e)
         except Exception as e:
             await ctx.send(f'Error:\n```\n{str(e)}```')
             print(traceback.format_exc())

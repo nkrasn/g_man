@@ -59,6 +59,7 @@ class Corruption(commands.Cog):
         except Exception as e:
             print(e)
             await ctx.send("Couldn't modify duration data :(\nSomething that might work: try running a random filter through the video (such as `!volume 1` or `!scale 480`) and try again.")
+            fs.close()
             return False
 
 

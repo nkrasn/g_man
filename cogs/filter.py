@@ -421,6 +421,9 @@ class Filter(commands.Cog):
     @commands.command()
     async def backwards(self, ctx):
         await video_creator.apply_filters_and_send(ctx, self._backwards, {})
+    @commands.command()
+    async def reverse(self, ctx):
+        await self.backwards(ctx)
 
 
     async def _blur(self, ctx, vstream, astream, kwargs):
@@ -650,6 +653,15 @@ class Filter(commands.Cog):
         await video_creator.apply_filters_and_send(ctx, self._loop, {'amount': amount})
 
 
+    async def _pitch(self, ctx, vstream, astream, kwargs):
+        pitch = kwargs['pitch']
+        astream = astream.filter('rubberband', pitch=pitch)
+        return vstream, astream, {}
+    @commands.command()
+    async def pitch(self, ctx, pitch : float = 2):
+        await video_creator.apply_filters_and_send(ctx, self._pitch, {'pitch': pitch})
+
+
     async def _saturation(self, ctx, vstream, astream, kwargs):
         vstream = vstream.filter('hue', s=kwargs['s'])
         return vstream, astream, {}
@@ -685,6 +697,9 @@ class Filter(commands.Cog):
             h = -2
 
         await video_creator.apply_filters_and_send(ctx, self._scale, {'w':w, 'h':h})
+    @commands.command()
+    async def size(self, ctx, w : str = '480', h : str = 'auto'):
+        await self.scale(ctx, w, h)
     
 
     async def _speed(self, ctx, vstream, astream, kwargs):
@@ -718,7 +733,7 @@ class Filter(commands.Cog):
 
 
     async def _wobble(self, ctx, vstream, astream, kwargs):
-        astream = astream.filter('chorus', delays='80ms', decays=1, depths=4, speeds=kwargs['speed'])
+        astream = astream.filter('chorus', delays='80ms', decays=1, depths=4, speeds=kwargs['speeds'])
         return vstream, astream, {}
     @commands.command(pass_context=True)
     async def wobble(self, ctx, speed : str = '8'):

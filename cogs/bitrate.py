@@ -31,6 +31,7 @@ class Bitrate(commands.Cog):
 
     async def _b(self, ctx, vstream, astream, kwargs):
         # All that's needed is to pass the bitrate output params stored in kwargs
+        del kwargs['input_filename']
         return vstream, astream, kwargs
     @commands.command()
     async def b(self, ctx, vid_bitrate, audio_bitrate):

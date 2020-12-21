@@ -8,7 +8,7 @@ import ffmpeg
 
 MAX_MEM_PER_CHANNEL = 3
 yt_regex = (r'(https?://)?(www\.)?(youtube|youtu|youtube-nocookie)\.(com|be)/(watch\?v=|embed/|v/|.+\?v=)?([^&=%\?]{11})')
-discord_cdn_regex = (r'https://(cdn|media)\.discordapp\.(com|net)/attachments/.+\.(mp4|webm|mov)')
+discord_cdn_regex = (r'https://(cdn|media)\.discordapp\.(com|net)/attachments/.+\.(mp4|webm|mov|MP4|WEBM|MOV)')
 twitter_regex = (r'(https?://)?(www\.)?(mobile\.)?twitter\.com/.+/status/[0-9]+(\?.+)?')
 
 audio_filetypes = ['mp3', 'ogg', 'wav']
