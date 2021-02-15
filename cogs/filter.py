@@ -390,7 +390,11 @@ class Filter(commands.Cog):
         target_input = ffmpeg.input(kwargs['target_filepath'])
         vstream = target_input.video
         if(kwargs['blend']):
-            astream = ffmpeg.filter([target_input.audio, astream], 'amix')
+            astream = (
+                ffmpeg
+                .filter([target_input.audio, astream], 'amix', dropout_transition=4000)
+                .filter('volume', volume=2, precision='fixed')
+            )
         #return (vstream, astream, {'shortest':None, 'vcodec':'copy'})
         return (vstream, astream, {'vcodec':'copy'})
     @commands.command()
@@ -424,6 +428,27 @@ class Filter(commands.Cog):
     @commands.command()
     async def reverse(self, ctx):
         await self.backwards(ctx)
+
+    
+    async def _bassboost(self, ctx, vstream, astream, kwargs):
+        treble_level = kwargs['treble_level']
+        eq = [-5] * 18
+        eq_dict = {}
+        for i in range(len(eq)):
+            arg_name = f'{i+1}b'
+            if(i < treble_level):
+                eq_dict[arg_name] = 20
+
+        astream = (
+            astream
+            .filter('superequalizer', **eq_dict)
+            .filter('volume', volume=30, precision='fixed')
+        )
+        return (vstream, astream, {})
+    @commands.command()
+    async def bassboost(self, ctx, treble_level : int = 1):
+        treble_level = max(1, min(treble_level, 18))
+        await video_creator.apply_filters_and_send(ctx, self._bassboost, {'treble_level':treble_level})
 
 
     async def _blur(self, ctx, vstream, astream, kwargs):
@@ -591,7 +616,11 @@ class Filter(commands.Cog):
             .filter('setsar', r='1:1')
         )
         vstream = ffmpeg.overlay(vstream, vgreen, x=0, y=0)
-        astream = ffmpeg.filter([astream, agreen], 'amix')
+        astream = (
+            ffmpeg
+            .filter([astream, agreen], 'amix', dropout_transition=4000)
+            .filter('volume', volume=2, precision='fixed')
+        )
 
         return vstream, astream, {}
     @commands.command()
@@ -652,6 +681,16 @@ class Filter(commands.Cog):
         amount = max(2, min(20, amount))
         await video_creator.apply_filters_and_send(ctx, self._loop, {'amount': amount})
 
+    
+    async def _nervous(self, ctx, vstream, astream, kwargs):
+        frames = kwargs['frames']
+        vstream = vstream.filter('random', frames=frames)
+        return vstream, astream, {}
+    @commands.command()
+    async def nervous(self, ctx, frames : int = 30):
+        frames = min(512, max(2, frames))
+        await video_creator.apply_filters_and_send(ctx, self._nervous, {'frames':frames})
+
 
     async def _pitch(self, ctx, vstream, astream, kwargs):
         pitch = kwargs['pitch']
@@ -695,11 +734,22 @@ class Filter(commands.Cog):
             h = min(1240, max(int(h), 50))
         else:
             h = -2
-
         await video_creator.apply_filters_and_send(ctx, self._scale, {'w':w, 'h':h})
     @commands.command()
     async def size(self, ctx, w : str = '480', h : str = 'auto'):
         await self.scale(ctx, w, h)
+
+    
+    async def _scroll(self, ctx, vstream, astream, kwargs):
+        h = kwargs['h']
+        v = kwargs['v']
+        vstream = vstream.filter('scroll', h=h, v=v)
+        return vstream, astream, {}
+    @commands.command()
+    async def scroll(self, ctx, h : float = 1, v : float = 0):
+        h = min(100, max(-100, h)) / 100
+        v = min(100, max(-100, v)) / 100
+        await video_creator.apply_filters_and_send(ctx, self._scroll, {'h':h, 'v':v})
     
 
     async def _speed(self, ctx, vstream, astream, kwargs):

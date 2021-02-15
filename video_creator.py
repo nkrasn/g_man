@@ -52,6 +52,8 @@ async def apply_filters_and_send(ctx, code, kwargs):
             input_stream_v, input_stream_a, output_params = await code(ctx, input_stream.video, input_stream.audio, kwargs)
             if('fs' not in output_params):
                 output_params['fs'] = '7M'
+            if('movflags' not in output_params):
+                output_params['movflags'] = 'faststart'
             await set_progress_bar(ctx, 2)
 
             ffmpeg_output = None

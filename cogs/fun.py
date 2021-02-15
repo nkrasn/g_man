@@ -258,7 +258,8 @@ class Fun(commands.Cog):
         )
 
         # Adding music
-        astream = ffmpeg.input("tutorial/" + random.choice(['evanescence', 'trance']) + '.mp3')
+        song = random.choice(os.listdir('tutorial/songs/'))
+        astream = ffmpeg.input(f"tutorial/songs/{song}")
 
         return (output_stream, astream, {'vsync':2, 'shortest':None})
     @commands.command()

@@ -5,6 +5,7 @@ bot_info.json
 # These should be downloaded manually
 vids/*
 tutorial/*
+tutorial/songs/*
 fonts/*
 clips/*
 ffmpeg4-2-2/*

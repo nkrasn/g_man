@@ -17,7 +17,7 @@ for f in vid_files:
     os.remove(f'vids/{f}')
 
 
-extensions = ['cogs.bitrate', 'cogs.filter', 'cogs.fun', 'cogs.corruption']
+extensions = ['cogs.bitrate', 'cogs.filter', 'cogs.fun', 'cogs.corruption', 'cogs.bookmarks']
 bot = commands.Bot(command_prefix=commands.when_mentioned_or('!'), help_command=None)
 
 # Loads extensions, returns string saying what reloaded

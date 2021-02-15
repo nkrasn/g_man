@@ -19,6 +19,7 @@ _Note_: You can use `k` for kilobits in your parameters. Examples: `4.3k` instea
 | audioblend<br>audiomerge | `!audioblend` | | Blend the audio in the second to most recent video with the audio from the most recent video. | `!audioblend` |
 | audioswap | `!audioswap` | | Swap the audio in the second to most recent video with the audio from the most recent video. | `!audioswap` |
 | backwards<br>reverse | `!backwards` | | Reverse the video. | `!backwards` |
+| bassboost | `!bassboost <treble_amount>` | `1 to 18` | Make the audio bass boosted and loud. If you need more treble, increase `<treble_amount>` (by default it's 1). | `!bassboost`<br><br>`!bassboost 4` |
 | blur | `!blur <amount>` | `1 - 127` | Blur the video. \<amount\> represents the radius of the blur around each pixel. | `!blur 10` |
 | brightness | `!brightness <amount>` | `-1 to 1` | Adjust the brightness of a video. | `!brightness 2` |
 | concat<br>merge | `!concat` | | Combine the two most recently sent videos. Most recent video will be played after the second to most recent. | `!concat` |
@@ -33,8 +34,10 @@ _Note_: You can use `k` for kilobits in your parameters. Examples: `4.3k` instea
 | invert<br>inverse<br>negate<br>negative | `!invert` | | Invert the video's colors. | `!invert` |
 | lagfun | `!lagfun <amount>` | `0 to 1` | Makes darker pixels update slower. This can create an interesting smearing effect with lighter pixels. A higher \<amount\> makes the smearing last longer, with a value of 1 causing bright colors to never disappear. Values close to 0.96 create very noticable results. | `!lagfun 0.99` |
 | loop | `!loop <amount>` | `2 to 20` | Loop the video. | `!loop 5` |
+| nervous | `!nervous <radius>` | `2 to 512` | Randomize frame positions. Each frame is shuffled with a frame that is at most `<radius>` frames away, with a default of 30. | `!nervous`<br><br>`!nervous 5` |
 | saturate<br>saturation | `!saturate <amount>` | `-10 to 10` | Saturate the video. | `!saturate 2` |
 | scale<br>size | `!scale <width> <height>` | `50 to 1240` | Scale the video. You can preserve the aspect ratio by setting \<width\> or \<height\> to auto. By default, \<width\>=480 and \<height\>=auto. | `!scale 640 480`<br><br>`!scale 240`<br><br>`!scale auto 720` |
+| scroll | `!scroll <horizontal> <vertical>` | `-100 to 100` | Make the video scroll with a default `<horizontal>` speed of 1 and `<vertical>` speed of 0. Speed describes how much of the video should scroll every frame (example: horizontal speed of 5 = video scrolls horizontally by 5% of its width every frame). | `!scroll`<br><br>`!scroll 5`<br><br>`!scroll 0 4` |
 | speed | `!speed <amount>` | `0.05 to inf` | Change the speed of the video. | `!speed 2` |
 | volume | `!volume <amount>` | `-inf to inf` | Increase/decrease volume. A value of 1 does no change. | `!volume 5` |
 | wobble | `!wobble <frequency>` | `More than 0` | Make the audio wobbly. | `!wobble 15` |
@@ -68,6 +71,16 @@ _Note_: You can use `k` for kilobits in your parameters. Examples: `4.3k` instea
 | text | `!text <top_text>\|<bottom_text>` | | Adds captions to the top and bottom of the video. You separate \<top_text\> and \<bottom_text\> with a pipe symbol `\|`. | `!text this will be on top\|and this will be on the bottom`<br><br>`!text this will only be on top`<br><br>`!text \|this will only be on the bottom` |
 | trippy | `!trippy <speed> <blend_mode>` | speed: `0.5 to 1` | Overlays and blends a slowed down version of the video on top of itself. You can control the `<speed>` of the overlay, by default it's `0.97`.<br><br>`<blend_mode>` specifies how the videos blend together, by default it's set to `average`. A full list of blend modes can be found here: https://ffmpeg.org/ffmpeg-filters.html#blend-1 | `!trippy`<br><br>`!trippy 0.7`<br><br>`!trippy 0.8 xor` |
 | tutorial | `!tutorial <top_text>\|<bottom_text>` | | Converts the video into an old-school YouTube tutorial made with Windows Movie Maker. You can customize the title screen's \<top_text\> and \<bottom_text\> the same way you would with the !text command. If no top text is provided, a randomized title is chosen. If no bottom text is provided, "By your_username" is chosen. | `!tutorial how to download google chrome\|working 2010` |
+<br>
+
+# Bookmarks
+You can bookmark videos and load them in any server with g_man. Bookmark labels can only contain letters, numbers, and spaces.
+| Command | Format | Description | Examples |
+| --- | --- | --- | --- |
+| save<br>store | `!save <label>` | Save the most recent video to your bookmarks with the name `<label>`. You can also save a video with a blank `<label>`, can be nice as a temporary bookmark. | `!save really good video`<br><br>`!save` |
+| load<br>use | `!load <label>` | Load a video from your bookmarks with the name `<label>`. | `!load really good video`<br><br>`!load` |
+| delete<br>remove | `!delete <label>` | Delete a video from your bookmarks with the name `<label>`. | `!delete really good video` |
+| bookmarks | `!bookmarks` | See all your bookmarks. | `!bookmarks` |
 <br>
 
 # Advanced
