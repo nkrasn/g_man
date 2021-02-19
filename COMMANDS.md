@@ -61,10 +61,11 @@ _Note_: You can use `k` for kilobits in your parameters. Examples: `4.3k` instea
 | americ | `!americ` | | Replaces the video's audio with "Never Meant" by American Football. | `!americ` |
 | cartoony<br>cartoon | `!cartoony` | | Makes the video look more cartoony. | `!cartoony` |
 | demonize | `!demonize` | | Makes the video look and sound more scary. | `!demonize` |
+| gif | `!gif` | | Converts the video to a gif. | `!gif`|
 | histogram | `!histogram` | | Convert the video into a histogram of the audio volume. | `!volume` |
 | hypercam | `!hypercam` | | Add an Unregistered Hypercam 2 watermark. | `!hypercam` |
 | ifunny | `!ifunny` | | Add an iFunny watermark. | `!ifunny` |
-| mp3 | `!mp3` | | Convert video to an mp3. | `!mp3`|
+| mp3 | `!mp3` | | Converts the video to an mp3. | `!mp3`|
 | pingpong | `!pingpong` | | Plays the video, then plays it in reverse. | `!pingpong` |
 | rainbow | `!rainbow <speed>` | `-inf to inf` | Makes the hue change over time, creating a rainbow effect. By default it's 360 degrees per second, you can multiply this speed by \<speed\>. | `!rainbow`<br><br>`!rainbow 2` |
 | tetris | `!tetris` | | Replaces the video's audio with the vocoded version of tetris beatbox. | `!tetris` |

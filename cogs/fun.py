@@ -57,6 +57,13 @@ class Fun(commands.Cog):
     @commands.command(pass_context=True)
     async def demonize(self, ctx):
         await video_creator.apply_filters_and_send(ctx, self._demonize, {})
+
+
+    async def _gif(self, ctx, vstream, astream, kwargs):
+        return (vstream, astream, {})
+    @commands.command()
+    async def gif(self, ctx):
+        await video_creator.apply_filters_and_send(ctx, self._gif, {'is_gif':True})
     
 
     async def _histogram(self, ctx, vstream, astream, kwargs):

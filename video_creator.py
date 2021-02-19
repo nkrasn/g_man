@@ -16,7 +16,8 @@ async def set_progress_bar(ctx, idx):
     await ctx.message.add_reaction(loading_emotes[idx])
 
 async def print_ffmpeg_error(ctx, e):
-    err = str(e.stderr.decode('utf8')).split('\n')
+    err_full = str(e.stderr.decode('utf8'))
+    err = err_full.split('\n')
     friendlier_err = ''
     for line in err:
         if(line.startswith('[') and 'Copyleft' not in line):
@@ -24,6 +25,7 @@ async def print_ffmpeg_error(ctx, e):
     if(len(friendlier_err) > 1800):
         friendlier_err = friendlier_err[:1800]
     await ctx.send(f"An error occurred :( ```{friendlier_err}```\nIf the error doesn't make sense, try scaling the video(s) down using `!scale 480` and try again.")
+    print(err_full)
 
 # Download the video, then wrap the filter code in a try catch statement
 async def apply_filters_and_send(ctx, code, kwargs):
@@ -36,13 +38,18 @@ async def apply_filters_and_send(ctx, code, kwargs):
     await set_progress_bar(ctx, 1)
 
     is_mp3 = False
+    is_gif = False
     if('is_mp3' in kwargs):
         is_mp3 = kwargs['is_mp3']
+    if('is_gif' in kwargs):
+        is_gif = kwargs['is_gif']
     kwargs['input_filename'] = input_vid
                 
     output_filename = f'vids/{ctx.message.id}.'
     if(is_mp3):
         output_filename += 'mp3'
+    elif(is_gif):
+        output_filename += 'gif'
     else:
         output_filename += 'mp4'
     
@@ -59,6 +66,8 @@ async def apply_filters_and_send(ctx, code, kwargs):
             ffmpeg_output = None
             if(is_mp3):
                 ffmpeg_output = ffmpeg.output(input_stream_a, output_filename, **output_params)
+            elif(is_gif):
+                ffmpeg_output = ffmpeg.output(input_stream_v, output_filename, **output_params)
             else:
                 ffmpeg_output = ffmpeg.output(input_stream_a, input_stream_v, output_filename, **output_params)
             ffmpeg_output.run(cmd='ffmpeg-static/ffmpeg', overwrite_output=True, capture_stderr=True)
