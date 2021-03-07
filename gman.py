@@ -17,7 +17,7 @@ for f in vid_files:
     os.remove(f'vids/{f}')
 
 
-extensions = ['cogs.bitrate', 'cogs.filter', 'cogs.fun', 'cogs.corruption', 'cogs.bookmarks']
+extensions = ['cogs.bitrate', 'cogs.filter', 'cogs.fun', 'cogs.corruption', 'cogs.utility']
 bot = commands.Bot(command_prefix=commands.when_mentioned_or('!'), help_command=None)
 
 # Loads extensions, returns string saying what reloaded
@@ -53,13 +53,13 @@ async def on_message(message):
     if(len(message.attachments) > 0):
         msg_url = message.attachments[0].url
         if(msg_url.split('.')[-1] in media_cache.approved_filetypes):
-            media_cache.add_to_cache(message.channel.id, message.attachments[0].url)
+            media_cache.add_to_cache(message, message.attachments[0].url)
             print("Added file!")
     elif(re.match(media_cache.discord_cdn_regex, message.content)):
-        media_cache.add_to_cache(message.channel.id, message.content)
+        media_cache.add_to_cache(message, message.content)
         print("Added discord cdn url!")
     elif(re.match(media_cache.yt_regex, message.content) or re.match(media_cache.twitter_regex, message.content)):
-        media_cache.add_to_cache(message.channel.id, message.content)
+        media_cache.add_to_cache(message, message.content)
         print("Added yt/twitter url! " + message.content)
 
     await bot.process_commands(message)

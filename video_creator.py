@@ -33,7 +33,7 @@ async def apply_filters_and_send(ctx, code, kwargs):
     await set_progress_bar(ctx, 0)
     input_vid, is_yt, result = await media_cache.download_last_video(ctx)
     if(not result):
-        await ctx.send("Error downloading the video")
+        await ctx.send("There was an error downloading the video, try uploading the video again.")
         return
     await set_progress_bar(ctx, 1)
 

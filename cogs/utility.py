@@ -5,23 +5,41 @@ import bot_info
 import pymongo
 import media_cache
 import string
+import database as db
 
-class Bookmarks(commands.Cog):
+class Utility(commands.Cog):
     def __init__(self, bot):
+        '''
         mongo_url = bot_info.data['mongo_url']
         self.mongo_client = pymongo.MongoClient(mongo_url)
         mongo_url = ''
 
         self.db = self.mongo_client['gman']
-        self.inv = self.db['inventory']
+        self.inv = self.db['inventory']'''
 
         self.valid_label_chars = string.ascii_letters + string.digits + ' '
         self.bot = bot
+
+    @commands.command()
+    async def undo(self, ctx):
+        # Limiting to 2 so that you don't undo/delete the last video gman can use
+        vid_msg_id = list(db.vids.find({'channel':str(ctx.channel.id)}).sort('_id', - 1).limit(2))
+        #await ctx.send(vid_msg_id)
+        if(len(vid_msg_id) <= 1):
+            await ctx.send("Out of undos!")
+            return
+        vid_msg_id = vid_msg_id[0]['message_id']
+        
+        vid_to_undo = await ctx.fetch_message(int(vid_msg_id))
+        await vid_to_undo.delete()
+        await ctx.message.delete()
+        db.vids.delete_one({'message_id': vid_msg_id})
     
+
+    # ======== BOOKMARKS/INVENTORY SYSTEM ========
+
     def cleanup_label(self, label):
         return ''.join(c for c in label.strip() if c in self.valid_label_chars)
-
-
 
     @commands.command()
     async def save(self, ctx, *, label : str = ''):
@@ -36,7 +54,7 @@ class Bookmarks(commands.Cog):
 
         query = {'user':ctx.author.id, 'label':label}
         new_values = {'$set': {'video':video}}
-        result = self.inv.update_one(query, new_values, upsert=True)
+        result = db.inv.update_one(query, new_values, upsert=True)
         if(dirty_label != label): # Needed to remove some invalid chars from label
             await ctx.send(f'I saved your bookmark as `{label}`')
         else: # Label was clean from the start!
@@ -51,7 +69,7 @@ class Bookmarks(commands.Cog):
     async def load(self, ctx, *, label : str = ''):
         label = self.cleanup_label(label)
         
-        result = self.inv.find_one({'user':ctx.author.id, 'label':label})
+        result = db.inv.find_one({'user':ctx.author.id, 'label':label})
         if(result is None):
             await ctx.message.add_reaction('\u274C')
         else:
@@ -65,7 +83,7 @@ class Bookmarks(commands.Cog):
     @commands.command()
     async def delete(self, ctx, label : str = ''):
         label = self.cleanup_label(label)
-        result = self.inv.delete_one({'user':ctx.author.id, 'label':label})
+        result = db.inv.delete_one({'user':ctx.author.id, 'label':label})
         if(result is not None and result.deleted_count == 1):
             await ctx.message.add_reaction('\U0001F44D')
         else:
@@ -79,7 +97,7 @@ class Bookmarks(commands.Cog):
     @commands.command()
     async def bookmarks(self, ctx):
         bookmark_list = []
-        for bookmark in self.inv.find({'user':ctx.author.id}):
+        for bookmark in db.inv.find({'user':ctx.author.id}):
             label = bookmark['label']
             if(label != ''):
                 bookmark_list.append(f'* {label}')
@@ -98,4 +116,4 @@ class Bookmarks(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(Bookmarks(bot))
+    bot.add_cog(Utility(bot))

@@ -6,8 +6,9 @@ import discord
 import subprocess
 import ffmpeg
 import requests
+import database as db
 
-MAX_MEM_PER_CHANNEL = 3
+MAX_MEM_PER_CHANNEL = 8
 yt_regex = (r'(https?://)?(www\.)?(youtube|youtu|youtube-nocookie)\.(com|be)/(watch\?v=|embed/|v/|.+\?v=)?([^&=%\?]{11})')
 discord_cdn_regex = (r'https://(cdn|media)\.discordapp\.(com|net)/attachments/.+\.(mp4|MP4|webm|WEBM|mov|MOV|mkv|MKV)')
 twitter_regex = (r'(https?://)?(www\.)?(mobile\.)?twitter\.com/.+/status/[0-9]+(\?.+)?')
@@ -15,31 +16,27 @@ twitter_regex = (r'(https?://)?(www\.)?(mobile\.)?twitter\.com/.+/status/[0-9]+(
 audio_filetypes = ['mp3', 'ogg', 'wav']
 approved_filetypes = ['mp4', 'mov', 'avi', 'webm', 'flv', 'wmv', 'mkv'] + audio_filetypes
 
-def add_to_cache(channel, img_url):
-    channel = str(channel)
-    data = None
-    with open('cache.json', 'r') as json_file:
-        data = json.load(json_file)
-        # append to cache
-        if(channel in data.keys()):
-            data[channel].append(img_url)
-            if(len(data[channel]) > MAX_MEM_PER_CHANNEL):
-                data[channel].pop(0)
-        # initialize entry in cache
-        else:
-            data[channel] = [img_url]
-    with open('cache.json', 'w') as json_file:
-        if(data is not None):
-            json.dump(data, json_file)
+def add_to_cache(message, img_url):
+    msg_id = str(message.id)
+    channel = str(message.channel.id)
+    
+    inserted_vid = db.vids.insert_one({'channel':channel, 'message_id':msg_id, 'url':img_url})
+    
+    channel_vids = db.vids.find({'channel':channel}).sort('_id', 1)
+    channel_vids_count = channel_vids.count()
+    # Removing old videos
+    if(channel_vids_count > MAX_MEM_PER_CHANNEL):
+        to_delete = list(channel_vids.limit(channel_vids_count - MAX_MEM_PER_CHANNEL))
+        to_delete = list(map(lambda x : x['_id'], to_delete))
+        db.vids.delete_many({'_id' : {'$in': to_delete}})
 
 
 def get_from_cache(channel):
-    data = None
-    with open('cache.json') as json_file:
-        data = json.load(json_file)
-        if(channel in data):
-            return data[channel]
-    return None
+    vids = list(db.vids.find({'channel':channel}).sort('_id', 1))
+    if(len(vids) == 0):
+        return None
+    vids = list(map(lambda x : x['url'], vids))
+    return vids
 
 
 
@@ -82,17 +79,18 @@ async def download_last_video(ctx):
 
 async def download_nth_video(ctx, n):
     n = -(n + 1) # most recent videos are at the end
-    input_vid = get_from_cache(str(ctx.message.channel.id))[n]
-    #await ctx.send(f'working on `{input_vid}`')
-    is_yt = True # TODO: remove this flag, all videos will be downloaded now instead of passing URL to ffmpeg
+    input_vid = get_from_cache(str(ctx.message.channel.id))
     if(input_vid is None): # no video found in the channel
         await ctx.send("Couldn't find a video to send, try sending a video before using a command.")
         return None, None, False
-    elif(re.match(yt_regex, input_vid) or re.match(twitter_regex, input_vid)): # yt video
+    input_vid = input_vid[n]
+    #await ctx.send(f'working on `{input_vid}`')
+    is_yt = True # TODO: remove this flag, all videos will be downloaded now instead of passing URL to ffmpeg
+    if(re.match(yt_regex, input_vid) or re.match(twitter_regex, input_vid)): # yt video
         is_yt = True
         result, input_vid = await yt(ctx, input_vid, ctx.message.id)#n)
         if(not result):
-            await ctx.send("Could not download the video!")
+            #await ctx.send("Could not download the video!")
             return None, None, False
     else: # discord video
         file_extension = input_vid.split('.')[-1]
