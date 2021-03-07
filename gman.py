@@ -1,8 +1,6 @@
 import discord
 import asyncio
-import threading
 from discord.ext import commands
-import importlib
 import bot_info
 import sys
 import media_cache
@@ -17,7 +15,7 @@ for f in vid_files:
     os.remove(f'vids/{f}')
 
 
-extensions = ['cogs.bitrate', 'cogs.filter', 'cogs.fun', 'cogs.corruption', 'cogs.utility']
+extensions = ['cogs.bitrate', 'cogs.filter', 'cogs.fun', 'cogs.corruption', 'cogs.bookmarks', 'cogs.utility']
 bot = commands.Bot(command_prefix=commands.when_mentioned_or('!'), help_command=None)
 
 # Loads extensions, returns string saying what reloaded

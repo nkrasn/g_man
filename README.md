@@ -18,7 +18,7 @@ You can get this link from within Discord by sending "!help" in a channel
 * discord.py with voice support (tested on version 1.5)
 * Static build of ffmpeg (version 4.2 or above)
 * A MongoDB database
-  * The bot looks for a database called `gman` with a collection called `inventory` in it for the bookmark system.
+  * The bot looks for a database called `gman`. It uses a collection called `inventory` for the bookmark system and `videos` for keeping track of videos sent.
 * ffmpeg-python
 * youtube_dl
 * AviGlitch, see https://github.com/ucnv/aviglitch for installation instructions.
@@ -50,7 +50,6 @@ At the moment, it is required to have a folder called ffmpeg-static in the root 
     * Drag any .mp3 background music you want for the !tutorial command (such as "Trance - 009 Sound System Dreamscape" or "Evanescence - Bring Me to Life")
   * clips
     * Contains any files used by other commands.
-* Create a cache.json file in the root directory containing `{}`
 * Create a bot_info.json file in the root directory containing the following content:
 ```
      {

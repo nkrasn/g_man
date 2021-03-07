@@ -2,14 +2,12 @@ import discord
 import asyncio
 from discord.ext import commands
 import subprocess
-import signal
 from subprocess import Popen
 import youtube_dl
 import media_cache
 import re
 import os
 import ffmpeg
-import traceback
 import random
 import textwrap
 import video_creator
@@ -57,13 +55,6 @@ class Fun(commands.Cog):
     @commands.command(pass_context=True)
     async def demonize(self, ctx):
         await video_creator.apply_filters_and_send(ctx, self._demonize, {})
-
-
-    async def _gif(self, ctx, vstream, astream, kwargs):
-        return (vstream, astream, {})
-    @commands.command()
-    async def gif(self, ctx):
-        await video_creator.apply_filters_and_send(ctx, self._gif, {'is_gif':True})
     
 
     async def _histogram(self, ctx, vstream, astream, kwargs):
@@ -91,13 +82,6 @@ class Fun(commands.Cog):
     @commands.command()
     async def ifunny(self, ctx):
         await video_creator.apply_filters_and_send(ctx, self._watermark, {'watermark_filepath':'clips/ifunny.jpg', 'x':'main_w-overlay_w', 'y':'main_h-overlay_h', 'w':-2, 'h':16})
-        
-    
-    async def _mp3(self, ctx, vstream, astream, kwargs):
-        return (vstream, astream, {})
-    @commands.command()
-    async def mp3(self, ctx):
-        await video_creator.apply_filters_and_send(ctx, self._mp3, {'is_mp3':True})
 
 
     async def _pingpong(self, ctx, vstream, astream, kwargs):

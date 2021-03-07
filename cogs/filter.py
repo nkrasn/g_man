@@ -2,7 +2,6 @@ import discord
 import asyncio
 from discord.ext import commands
 import subprocess
-import signal
 from subprocess import Popen
 import youtube_dl
 import media_cache
@@ -10,7 +9,6 @@ import re
 import os
 import shlex
 import ffmpeg
-import traceback
 import random
 import re
 import video_creator

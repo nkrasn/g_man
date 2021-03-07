@@ -1,4 +1,3 @@
-import json
 import re
 import youtube_dl
 import os

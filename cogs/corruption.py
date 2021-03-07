@@ -2,17 +2,14 @@ import discord
 import asyncio
 from discord.ext import commands
 import subprocess
-import signal
 from subprocess import Popen
 import youtube_dl
 import random
 import os
-import shutil
 import media_cache
 import re
 import os
 import ffmpeg
-import traceback
 import video_creator
 
 class Corruption(commands.Cog):

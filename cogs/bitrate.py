@@ -1,13 +1,9 @@
 import discord
 import asyncio
 from discord.ext import commands
-import subprocess
-from subprocess import Popen
 import youtube_dl
 import media_cache
-import json
 import re
-import os
 import ffmpeg
 import video_creator
 
