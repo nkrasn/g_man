@@ -22,7 +22,7 @@ class Utility(commands.Cog):
     async def mp3(self, ctx):
         await video_creator.apply_filters_and_send(ctx, self._mp3, {'is_mp3':True})
 
-    
+
     @commands.command()
     async def undo(self, ctx):
         # Limiting to 2 so that you don't undo/delete the last video gman can use
@@ -37,6 +37,7 @@ class Utility(commands.Cog):
         await vid_to_undo.delete()
         await ctx.message.delete()
         db.vids.delete_one({'message_id': vid_msg_id})
+
         
 
 

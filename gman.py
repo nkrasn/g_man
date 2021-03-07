@@ -7,6 +7,7 @@ import media_cache
 import re
 import os
 import traceback
+import database as db
 
 
 # If any videos were not deleted while the bot was last up, remove them
@@ -61,6 +62,11 @@ async def on_message(message):
         print("Added yt/twitter url! " + message.content)
 
     await bot.process_commands(message)
+
+# Forgetting videos that get deleted
+@bot.event
+async def on_message_delete(message):
+    db.vids.delete_one({'message_id':str(message.id)})
 
 # Command error
 @bot.event
