@@ -87,6 +87,7 @@ You can bookmark videos and load them in any server with g_man. Bookmark labels 
 | --- | --- | --- | --- |
 | gif | `!gif` | Converts the video to a gif. | `!gif`|
 | mp3 | `!mp3` | Converts the video to an mp3. | `!mp3`|
+| swap | `!swap` | Swaps the last two videos sent, simply by reposting the second to last video. | `!swap` |
 | undo | `!undo` | Delete the last video sent. | `!undo` |
 
 # Advanced

@@ -45,11 +45,11 @@ class Fun(commands.Cog):
         astream = astream.filter('chorus', delays='80ms', decays=1, speeds=20, depths=4)
         vstream = (
             vstream
-            .filter('amplify', radius=1, factor=5)
+            .filter('amplify', radius=1, factor=3)
             .filter('eq', contrast=1.3)
             .filter('lagfun', decay=0.95)
             .filter('eq', saturation=1.3)
-            .filter('amplify', radius=1, factor=15)
+            .filter('amplify', radius=1, factor=5)
         )
         return vstream, astream, {'fs':'4M'}
     @commands.command(pass_context=True)
