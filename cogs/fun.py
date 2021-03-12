@@ -55,6 +55,72 @@ class Fun(commands.Cog):
     @commands.command(pass_context=True)
     async def demonize(self, ctx):
         await video_creator.apply_filters_and_send(ctx, self._demonize, {})
+
+    
+    def semitones_to_pitches(self, semitones):
+        semitones = semitones.split(' ')
+        semitones = list(filter(lambda x : x.replace('.', '', 1).lstrip('-').isdigit(), semitones))
+        pitches = []
+
+        if(len(semitones) == 0):
+            semitones = random.choice((
+                (7, 14, -12),
+                (3, 7),
+                (-12, 12),
+                (6, 12),
+                (3, 6, 12)
+            ))
+        
+        a = 2**(1.0/12.0)
+        for semitone in semitones:
+            semitone = float(semitone)
+            pitch = a**abs(semitone)
+            if(semitone < 0):
+                pitch = 1.0 / pitch
+            pitches.append(pitch)
+
+        return pitches
+
+    async def _harmonize(self, ctx, vstream, astream, kwargs):
+        pitches = kwargs['pitches']
+        astreams = []
+        for i in range(len(pitches)):
+            pitch = pitches[i]
+            astream = astream.asplit()
+            astreams.append(astream[1].filter('rubberband', pitch=pitch))
+            astream = astream[0]
+        astreams.append(astream)
+
+        astream = astreams[0]
+        for i in range(1, len(astreams)):
+            astream = ffmpeg.filter([astream, astreams[i]], 'amix').filter('volume', volume=2, precision='fixed')
+
+        return vstream, astream, {}
+    @commands.command()
+    async def harmonize(self, ctx, *, semitones : str = ''):
+        pitches = self.semitones_to_pitches(semitones)
+        await video_creator.apply_filters_and_send(ctx, self._harmonize, {'pitches':pitches})
+
+    async def _harmonizedeep(self, ctx, vstream, astream, kwargs):
+        pitches = kwargs['pitches']
+        for pitch in pitches:
+            astream = astream.asplit()
+            astream = (
+                ffmpeg
+                .filter(
+                    [
+                        astream[0].filter('rubberband', pitch=pitch),
+                        astream[1]
+                    ],
+                    'amix'
+                )
+                .filter('volume', volume=2, precision='fixed')
+            )
+        return vstream, astream, {}
+    @commands.command()
+    async def harmonizedeep(self, ctx, *, semitones : str = ''):
+        pitches = self.semitones_to_pitches(semitones)
+        await video_creator.apply_filters_and_send(ctx, self._harmonizedeep, {'pitches':pitches})
     
 
     async def _histogram(self, ctx, vstream, astream, kwargs):

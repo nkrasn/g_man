@@ -42,6 +42,7 @@ async def on_ready():
     print(bot.user.name)
     print(bot.user.id)
     print('------')
+    await bot.change_presence(activity=discord.Game(name="!help"))
     global extensions
     print(reload_extensions(extensions))
 

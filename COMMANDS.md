@@ -61,6 +61,8 @@ _Note_: You can use `k` for kilobits in your parameters. Examples: `4.3k` instea
 | americ | `!americ` | | Replaces the video's audio with "Never Meant" by American Football. | `!americ` |
 | cartoony<br>cartoon | `!cartoony` | | Makes the video look more cartoony. | `!cartoony` |
 | demonize | `!demonize` | | Makes the video look and sound more scary. | `!demonize` |
+| harmonize | `!harmonize <semitones>` | `-inf to inf` | Mixes pitched versions of the audio, pitches determined by how many `<semitones>` you want the original audio off by. If you don't provide a list of `<semitones>`, a random selection will be used.<br><br>For example, `!harmonize 4 7` mixes the original audio with versions that are 4 semitones higher and 7 semitones higher (AKA a major chord).  | `!harmonize`<br><br>`!harmonize -12`<br><br>`!harmonize 4 7 11` |
+| harmonizedeep | `!harmonizedeep <semitones>` | `-inf to inf` | More chaotic version of !harmonize where the pitch of the last mix is adjusted rather than the original video. If you don't provide a list of `<semitones>`, a random selection will be used.<br><br>Difference between this and !harmonize becomes apparent when two pitches are provided, and gets more noticable as more `<semitones>` are added.<br><br>Example: `!harmonizedeep 3 7 -12` is the same as running these three commands in order: `!harmonize 3`, `!harmonize 7`, `!harmonize 12`. | `!harmonizedeep`<br><br>`!harmonizedeep -12 12`<br><br>`!harmonizedeep 3 7 10` |
 | histogram | `!histogram` | | Convert the video into a histogram of the audio volume. | `!volume` |
 | hypercam | `!hypercam` | | Add an Unregistered Hypercam 2 watermark. | `!hypercam` |
 | ifunny | `!ifunny` | | Add an iFunny watermark. | `!ifunny` |
@@ -85,9 +87,9 @@ You can bookmark videos and load them in any server with g_man. Bookmark labels 
 # Utility
 | Command | Format | Description | Examples |
 | --- | --- | --- | --- |
-| gif | `!gif` | Converts the video to a gif. | `!gif`|
-| mp3 | `!mp3` | Converts the video to an mp3. | `!mp3`|
-| swap | `!swap` | Swaps the last two videos sent, simply by reposting the second to last video. | `!swap` |
+| gif | `!gif` | Convert the video to a gif. | `!gif`|
+| mp3 | `!mp3` | Convert the video to an mp3. | `!mp3`|
+| swap | `!swap` | Swap the last two videos sent, simply by reposting the second to last video. | `!swap` |
 | undo | `!undo` | Delete the last video sent. | `!undo` |
 
 # Advanced
