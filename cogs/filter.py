@@ -697,6 +697,12 @@ class Filter(commands.Cog):
     @commands.command()
     async def pitch(self, ctx, pitch : float = 2):
         await video_creator.apply_filters_and_send(ctx, self._pitch, {'pitch': pitch})
+    @commands.command()
+    async def semitone(self, ctx, semitone : float = 12):
+        pitch = (2**(1.0/12.0))**abs(semitone)
+        if(semitone < 0):
+            pitch = 1.0 / pitch
+        await video_creator.apply_filters_and_send(ctx, self._pitch, {'pitch': pitch})
 
 
     async def _saturation(self, ctx, vstream, astream, kwargs):
