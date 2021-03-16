@@ -21,22 +21,6 @@ class Utility(commands.Cog):
     @commands.command()
     async def mp3(self, ctx):
         await video_creator.apply_filters_and_send(ctx, self._mp3, {'is_mp3':True})
-
-
-    @commands.command()
-    async def undo(self, ctx):
-        # Limiting to 2 so that you don't undo/delete the last video gman can use
-        vid_msg_id = list(db.vids.find({'channel':str(ctx.channel.id)}).sort('_id', -1).limit(2))
-        #await ctx.send(vid_msg_id)
-        if(len(vid_msg_id) <= 1):
-            await ctx.send("Out of undos!")
-            return
-        vid_msg_id = vid_msg_id[0]['message_id']
-        
-        vid_to_undo = await ctx.fetch_message(int(vid_msg_id))
-        await vid_to_undo.delete()
-        await ctx.message.delete()
-        db.vids.delete_one({'message_id': vid_msg_id})
     
 
     @commands.command()
@@ -51,8 +35,43 @@ class Utility(commands.Cog):
         await ctx.send(old_vid['url'])
         old_vid_msg = await ctx.fetch_message(int(old_vid['message_id']))
         
-        #await old_vid_msg.delete()
-        #db.vids.delete_one({'_id':old_vid['_id']})
+    
+    async def _timestamp(self, ctx, vstream, astream, kwargs):
+        vstream = (
+            vstream
+            .filter('fps', fps=100)
+            .filter('scale', w=480, h=-2)
+            .drawtext(
+                text="%{pts}",
+                #x="main_w/2 - tw/2", y="main_h/2 - th/2",
+                x="15", y="main_h - th*2 - 35",
+                fontsize=40, fontcolor="white", borderw=2, bordercolor="black",
+                escape_text=False
+            )
+        )
+        return vstream, astream, {}
+    @commands.command()
+    async def timestamp(self, ctx):
+        await video_creator.apply_filters_and_send(ctx, self._timestamp, {})
+    @commands.command()
+    async def time(self, ctx):
+        await self.timestamp(ctx)
+
+    
+    @commands.command()
+    async def undo(self, ctx):
+        # Limiting to 2 so that you don't undo/delete the last video gman can use
+        vid_msg_id = list(db.vids.find({'channel':str(ctx.channel.id)}).sort('_id', -1).limit(2))
+        #await ctx.send(vid_msg_id)
+        if(len(vid_msg_id) <= 1):
+            await ctx.send("Out of undos!")
+            return
+        vid_msg_id = vid_msg_id[0]['message_id']
+        
+        vid_to_undo = await ctx.fetch_message(int(vid_msg_id))
+        await vid_to_undo.delete()
+        await ctx.message.delete()
+        db.vids.delete_one({'message_id': vid_msg_id})
 
 
 

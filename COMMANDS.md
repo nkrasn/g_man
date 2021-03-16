@@ -20,6 +20,7 @@ _Note_: You can use `k` for kilobits in your parameters. Examples: `4.3k` instea
 | audioswap | `!audioswap` | | Swap the audio in the second to most recent video with the audio from the most recent video. | `!audioswap` |
 | backwards<br>reverse | `!backwards` | | Reverse the video. | `!backwards` |
 | bassboost | `!bassboost <treble_amount>` | `1 to 18` | Make the audio bass boosted and loud. If you need more treble, increase `<treble_amount>` (by default it's 1). | `!bassboost`<br><br>`!bassboost 4` |
+| bitcrush | `!bitcrush <samples> <bits>` | `1 to inf`<br>`1 to inf` | Bitcrushes the audio. By default, `<samples>` is 32 and `<bits>` is 2. Higher values make a more crushed sound. | `!bitcrush`<br><br>`!bitcrush 64`<br><br>`!bitcrush 8 8` |
 | blur | `!blur <amount>` | `1 - 127` | Blur the video. \<amount\> represents the radius of the blur around each pixel. | `!blur 10` |
 | brightness | `!brightness <amount>` | `-1 to 1` | Adjust the brightness of a video. | `!brightness 2` |
 | concat<br>merge | `!concat` | | Combine the two most recently sent videos. Most recent video will be played after the second to most recent. | `!concat` |
@@ -92,6 +93,7 @@ You can bookmark videos and load them in any server with g_man. Bookmark labels 
 | gif | `!gif` | Convert the video to a gif. | `!gif`|
 | mp3 | `!mp3` | Convert the video to an mp3. | `!mp3`|
 | swap | `!swap` | Swap the last two videos sent, simply by reposting the second to last video. | `!swap` |
+| time<br>timestamp | `!time` | Draws a timestamp, useful for figuring out when to !extract. | `!time` |
 | undo | `!undo` | Delete the last video sent. | `!undo` |
 
 # Advanced

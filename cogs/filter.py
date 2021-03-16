@@ -449,6 +449,18 @@ class Filter(commands.Cog):
         await video_creator.apply_filters_and_send(ctx, self._bassboost, {'treble_level':treble_level})
 
 
+    async def _bitcrush(self, ctx, vstream, astream, kwargs):
+        samples = kwargs['samples']
+        bits = kwargs['bits']
+        astream = astream.filter('acrusher', bits=bits, samples=samples, mode='log', mix=1)
+        return vstream, astream, {}
+    @commands.command()
+    async def bitcrush(self, ctx, samples : int = 32, bits : int = 2):
+        samples = max(0, samples)
+        bits = max(0, bits)
+        await video_creator.apply_filters_and_send(ctx, self._bitcrush, {'samples':samples, 'bits':bits})
+
+    
     async def _blur(self, ctx, vstream, astream, kwargs):
         vstream = vstream.filter('median', radius=kwargs['radius'])
         return vstream, astream, {}
@@ -585,6 +597,7 @@ class Filter(commands.Cog):
         return vstream, astream, {}
     @commands.command(pass_context=True)
     async def fps(self, ctx, framerate=15):
+        framerate = max(1, min(framerate, 144))
         await video_creator.apply_filters_and_send(ctx, self._fps, {'fps':framerate})
     
 

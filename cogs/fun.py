@@ -166,6 +166,96 @@ class Fun(commands.Cog):
         await video_creator.apply_filters_and_send(ctx, self._rainbow, {'h':f't*{speed*360}'})
 
 
+    async def _sequencer(self, ctx, vstream, astream, kwargs):
+        len_to_speed = (1, 2, 1, 0.5)
+
+        # Make vstream/astream for rests
+        vstream = vstream.split()
+        vrest = vstream[1].filter('eq', brightness=-1)
+        vstream = vstream[0]
+        astream = astream.asplit()
+        arest = astream[1].filter('volume', volume=-100, precision='fixed')
+        astream = astream[0]
+
+        # Make vstream/astream for final result
+        vstream = vstream.split()
+        vfinale = vstream[1]
+        vstream = vstream[0]
+        astream = astream.asplit()
+        afinale = astream[1]
+        astream = astream[0]
+
+        # Making the song
+        notes = kwargs['notes']
+        for note in notes:
+            note_tone, note_len = note[0], len_to_speed[note[1]]
+            vnote = None
+            anote = None
+
+            if(note_tone == '.'):
+                vrest = vrest.split()
+                vnote = vrest[1]
+                arest = arest.asplit()
+                anote = arest[1]
+            else:
+                vstream = vstream.split()
+                vnote = vstream[1]
+                astream = astream.asplit()
+                anote = astream[1].filter('rubberband', pitch=note_tone)
+
+            if(note_len != 1):
+                vnote = vnote.filter('setpts', f'{1.0/note_len}*PTS')
+                anote = anote.filter('atempo', note_len)
+            vfinale = ffmpeg.concat(vfinale, vnote, v=1, a=0)
+            afinale = ffmpeg.concat(afinale, anote, v=0, a=1)
+            
+            if(note_tone == '.'):
+                vrest = vrest[0]
+                arest = arest[0]
+            else:
+                vstream = vstream[0]
+                astream = astream[0]
+
+        return vfinale, afinale, {}
+    def semitone_to_pitch(self, semitone):
+        pitch = (2**(1.0/12.0))**abs(semitone)
+        if(semitone < 0):
+            pitch = 1.0 / pitch
+        return pitch
+    @commands.command()
+    async def sequencer(self, ctx, *, notes : str = '0 0 12x 7x ..'):
+        # Unfortunately, does not work at the moment
+        # Maybe one day...
+        return
+        # Tokenize
+        notes = notes.split(' ')
+        await ctx.send(notes)
+        for i in range(len(notes)):
+            raw_note = notes[i]
+
+            if(re.match(r'(\-?[0-9]+x*$)|(\.+$)', raw_note)):
+                # Rests
+                if(raw_note[0] == '.'):
+                    notes[i] = ('.', len(raw_note))
+                # Notes
+                else:
+                    note = (None, None)
+                    hold_pos = raw_note.find('x')
+                    if(hold_pos == -1):
+                        note = (self.semitone_to_pitch(int(raw_note)), 1)
+                    else:
+                        semitone = int(raw_note[:hold_pos])
+                        hold = len(raw_note[hold_pos:]) + 1
+                        note = (self.semitone_to_pitch(semitone), hold)
+                    notes[i] = note
+            else:
+                notes[i] = None
+                continue
+        notes = list(filter(lambda x : x is not None, notes))
+        await ctx.send(notes)
+        await video_creator.apply_filters_and_send(ctx, self._sequencer, {'notes':notes})
+
+
     @commands.command(pass_context=True)
     async def tetris(self, ctx):
         await video_creator.apply_filters_and_send(ctx, self._replace_audio, {'audio_filename':'tetris.mp3'})
