@@ -3,6 +3,7 @@ import asyncio
 from discord.ext import commands
 import video_creator
 import database as db
+import ffmpeg
 
 class Utility(commands.Cog):
     def __init__(self, bot):
@@ -10,10 +11,14 @@ class Utility(commands.Cog):
     
 
     async def _gif(self, ctx, vstream, astream, kwargs):
-        return (vstream, astream, {})
+        vstream = vstream.filter('fps', fps=fps).split()
+        palette = vstream[1].filter('palettegen')
+        vstream = ffmpeg.filter([vstream[0], palette], 'paletteuse')
+        return vstream, astream, {}
     @commands.command()
-    async def gif(self, ctx):
-        await video_creator.apply_filters_and_send(ctx, self._gif, {'is_gif':True})
+    async def gif(self, ctx, fps : int = 24):
+        fps = max(1, min(gif, 24))
+        await video_creator.apply_filters_and_send(ctx, self._gif, {'is_gif':True, 'fps':fps})
 
     
     async def _mp3(self, ctx, vstream, astream, kwargs):

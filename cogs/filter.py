@@ -853,6 +853,11 @@ class Filter(commands.Cog):
         for k,v in enumerate(commands):
             commands[k] = shlex.split(v)
         
+        # Help command
+        if(commands[0][0] == 'help'):
+            await ctx.send("Filters: https://ffmpeg.org/ffmpeg-filters.html\nUtilities: https://ffmpeg.org/ffmpeg-utils.html")
+            return
+
         # Remove invalid commands
         commands_copy = commands
         commands = []

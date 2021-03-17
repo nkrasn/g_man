@@ -8,7 +8,7 @@ import requests
 import database as db
 
 MAX_MEM_PER_CHANNEL = 8
-yt_regex = (r'(https?://)?(www\.)?(youtube|youtu|youtube-nocookie)\.(com|be)/(watch\?v=|embed/|v/|.+\?v=)?([^&=%\?]{11})')
+yt_regex = (r'(https?://)?(www\.)?(m\.youtube|youtube|youtu|youtube-nocookie)\.(com|be)/(watch\?v=|embed/|v/|.+\?v=)?([^&=%\?]{11})')
 discord_cdn_regex = (r'https://(cdn|media)\.discordapp\.(com|net)/attachments/.+\.(mp4|MP4|webm|WEBM|mov|MOV|mkv|MKV)')
 twitter_regex = (r'(https?://)?(www\.)?(mobile\.)?twitter\.com/.+/status/[0-9]+(\?.+)?')
 

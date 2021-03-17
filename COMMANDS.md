@@ -88,17 +88,17 @@ You can bookmark videos and load them in any server with g_man. Bookmark labels 
 <br>
 
 # Utility
-| Command | Format | Description | Examples |
-| --- | --- | --- | --- |
-| gif | `!gif` | Convert the video to a gif. | `!gif`|
-| mp3 | `!mp3` | Convert the video to an mp3. | `!mp3`|
-| swap | `!swap` | Swap the last two videos sent, simply by reposting the second to last video. | `!swap` |
-| time<br>timestamp | `!time` | Draws a timestamp, useful for figuring out when to !extract. | `!time` |
-| undo | `!undo` | Delete the last video sent. | `!undo` |
+| Command | Format | Min/Max Values | Description | Examples |
+| --- | --- | --- | --- | --- |
+| gif | `!gif <fps>` | `1 to 24` | Convert the video to a gif. Default `<fps>` is 24, consider lowering this number or scaling the video down if the GIF gets cut off. | `!gif`<br><br>`!gif 12`|
+| mp3 | `!mp3` | | Convert the video to an mp3. | `!mp3`|
+| swap | `!swap` | | Swap the last two videos sent, simply by reposting the second to last video. | `!swap` |
+| time<br>timestamp | `!time` | | Draws a timestamp, useful for figuring out when to !extract. | `!time` |
+| undo | `!undo` | | Delete the last video sent. | `!undo` |
 
 # Advanced
 ## !filter command
-You can apply almost any filter from FFMPEG using the !filter command.<br>
+EXPERIMENTAL: You can apply almost any filter from FFMPEG using the !filter command. At the moment, filters requiring two or more videos will not work.<br> You can get a link to all the filters in FFMPEG by typing `!filter help`.
 * Format: `!filter <filter_name> <filter_args>`
 * \<filter_args\> are formatted in this way: `arg1_name=arg1_value arg2_name=arg2_value ...`
 * Examples:
