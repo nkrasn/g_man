@@ -717,6 +717,17 @@ class Filter(commands.Cog):
             pitch = 1.0 / pitch
         await video_creator.apply_filters_and_send(ctx, self._pitch, {'pitch': pitch})
 
+    
+    async def _retro(self, ctx, vstream, astream, kwargs):
+        color_count = kwargs['color_count']
+        color_expr = f"round(val/(255/{color_count}))*(255/{color_count})"
+        vstream = vstream.filter('lutrgb', r=color_expr, g=color_expr, b=color_expr)
+        return vstream, astream, {}
+    @commands.command()
+    async def retro(self, ctx, color_count : int = 4):
+        color_count = max(1, min(255, color_count))
+        await video_creator.apply_filters_and_send(ctx, self._retro, {'color_count':color_count})
+
 
     async def _saturation(self, ctx, vstream, astream, kwargs):
         vstream = vstream.filter('hue', s=kwargs['s'])
