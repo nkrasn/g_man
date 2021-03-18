@@ -56,7 +56,9 @@ async def apply_filters_and_send(ctx, code, kwargs):
     async with ctx.typing():
         try:
             input_stream = ffmpeg.input(input_vid)
-            input_stream_v, input_stream_a, output_params = await code(ctx, input_stream.video, input_stream.audio, kwargs)
+            vstream = input_stream.video
+            astream = input_stream.audio
+            vstream, astream, output_params = await code(ctx, vstream, astream, kwargs)
             if('fs' not in output_params):
                 output_params['fs'] = '7M'
             if('movflags' not in output_params):
@@ -65,12 +67,18 @@ async def apply_filters_and_send(ctx, code, kwargs):
 
             ffmpeg_output = None
             if(is_mp3):
-                ffmpeg_output = ffmpeg.output(input_stream_a, output_filename, **output_params)
+                ffmpeg_output = ffmpeg.output(astream, output_filename, **output_params)
             elif(is_gif):
-                ffmpeg_output = ffmpeg.output(input_stream_v, output_filename, **output_params)
+                ffmpeg_output = ffmpeg.output(vstream, output_filename, **output_params)
             else:
-                ffmpeg_output = ffmpeg.output(input_stream_a, input_stream_v, output_filename, **output_params)
-            ffmpeg_output.run(cmd='ffmpeg-static/ffmpeg', overwrite_output=True, capture_stderr=True)
+                ffmpeg_output = ffmpeg.output(astream, vstream, output_filename, **output_params)
+
+            try:
+                ffmpeg_output.run(cmd='ffmpeg-static/ffmpeg', overwrite_output=True, capture_stderr=True)
+            except ffmpeg._run.Error as e:
+                # Error will most likely happen due to the video having no audio
+                ffmpeg_output = ffmpeg.output(vstream, output_filename, **output_params)
+                ffmpeg_output.run(cmd='ffmpeg-static/ffmpeg', overwrite_output=True, capture_stderr=True)
 
             await set_progress_bar(ctx, 3)
             await ctx.send(file=discord.File(output_filename))

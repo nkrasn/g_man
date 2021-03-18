@@ -40,9 +40,11 @@ class Corruption(commands.Cog):
                 fs.write(b'\x00')
             else: # mp4
                 # find mvhd and modify the duration data from there
-                fs.seek(filesize-40000)
+                #fs.seek(filesize-40000)
+                fs.seek(0)
                 duration_data_idx = fs.read().find(b'\x6d\x76\x68\x64') + 18
-                fs.seek(filesize-40000+duration_data_idx)
+                #fs.seek(filesize-40000+duration_data_idx)
+                fs.seek(duration_data_idx)
 
                 if(fake_type == 'negative'):
                     fs.write(b'\x00\x01\xff\xff\xff\xf0')
