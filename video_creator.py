@@ -39,10 +39,13 @@ async def apply_filters_and_send(ctx, code, kwargs):
 
     is_mp3 = False
     is_gif = False
+    is_ignored_mp4 = False
     if('is_mp3' in kwargs):
         is_mp3 = kwargs['is_mp3']
     if('is_gif' in kwargs):
         is_gif = kwargs['is_gif']
+    if('is_ignored_mp4' in kwargs):
+        is_ignored_mp4 = kwargs['is_ignored_mp4']
     kwargs['input_filename'] = input_vid
                 
     output_filename = f'vids/{ctx.message.id}.'
@@ -50,6 +53,8 @@ async def apply_filters_and_send(ctx, code, kwargs):
         output_filename += 'mp3'
     elif(is_gif):
         output_filename += 'gif'
+    elif(is_ignored_mp4): # Regular mp4, but not recorded in the database
+        output_filename += '_ignore.mp4'
     else:
         output_filename += 'mp4'
     

@@ -94,7 +94,7 @@ You can bookmark videos and load them in any server with g_man. Bookmark labels 
 | gif | `!gif <fps>` | `1 to 24` | Convert the video to a gif. Default `<fps>` is 24, consider lowering this number or scaling the video down if the GIF gets cut off. | `!gif`<br><br>`!gif 12`|
 | mp3 | `!mp3` | | Convert the video to an mp3. | `!mp3`|
 | swap | `!swap` | | Swap the last two videos sent, simply by reposting the second to last video. | `!swap` |
-| time<br>timestamp | `!time` | | Draws a timestamp, useful for figuring out when to !extract. | `!time` |
+| time<br>timestamp | `!time` | | Draws a timestamp on the video to help you figure out when to `!extract`.<br><br>NOTE: The video created by this command is ignored by g_man! This is so you don't have to run `!swap` afterwards in order to `!extract` from the original video. | `!time` |
 | undo | `!undo` | | Delete the last video sent. | `!undo` |
 
 # Advanced

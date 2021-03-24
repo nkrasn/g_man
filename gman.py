@@ -52,7 +52,7 @@ async def on_message(message):
     # Adding URLs to the cache
     if(len(message.attachments) > 0):
         msg_url = message.attachments[0].url
-        if(msg_url.split('.')[-1] in media_cache.approved_filetypes):
+        if(not msg_url.endswith('_ignore.mp4') and msg_url.split('.')[-1] in media_cache.approved_filetypes):
             media_cache.add_to_cache(message, message.attachments[0].url)
             print("Added file!")
     elif(re.match(media_cache.discord_cdn_regex, message.content)):

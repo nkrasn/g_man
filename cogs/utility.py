@@ -57,7 +57,7 @@ class Utility(commands.Cog):
         return vstream, astream, {}
     @commands.command()
     async def timestamp(self, ctx):
-        await video_creator.apply_filters_and_send(ctx, self._timestamp, {})
+        await video_creator.apply_filters_and_send(ctx, self._timestamp, {'is_ignored_mp4':True})
     @commands.command()
     async def time(self, ctx):
         await self.timestamp(ctx)
