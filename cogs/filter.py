@@ -12,6 +12,7 @@ import ffmpeg
 import random
 import re
 import video_creator
+import filter_helper
 
 class Filter(commands.Cog):
     def __init__(self, bot):
@@ -782,20 +783,8 @@ class Filter(commands.Cog):
 
     async def _speed(self, ctx, vstream, astream, kwargs):
         speed_change = kwargs['speed_change']
-        if(speed_change >= 0.5):
-            vstream = vstream.filter('setpts', f'{1.0/speed_change}*PTS')
-            astream = astream.filter('atempo', speed_change)
-        else:
-            current_speed = 1.0
-            while(current_speed >= speed_change):
-                if(current_speed * 0.5 <= speed_change):
-                    vstream = vstream.filter('setpts', f'{current_speed/speed_change}*PTS')
-                    astream = astream.filter('atempo', speed_change/current_speed)
-                    break
-                vstream = vstream.filter('setpts', '2*PTS')
-                astream = astream.filter('atempo', 0.5)
-                current_speed *= 0.5
-        return (vstream, astream, {})
+        vstream, astream = filter_helper.apply_speed(vstream, astream, speed_change)
+        return vstream, astream, {}
     @commands.command()
     async def speed(self, ctx, speed_change : float = 2.0):
         speed_change = max(0.05, speed_change)

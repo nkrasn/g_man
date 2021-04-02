@@ -4,6 +4,7 @@ from discord.ext import commands
 import video_creator
 import database as db
 import ffmpeg
+import filter_helper
 
 class Utility(commands.Cog):
     def __init__(self, bot):
@@ -11,13 +12,14 @@ class Utility(commands.Cog):
     
 
     async def _gif(self, ctx, vstream, astream, kwargs):
+        fps = kwargs['fps']
         vstream = vstream.filter('fps', fps=fps).split()
         palette = vstream[1].filter('palettegen')
         vstream = ffmpeg.filter([vstream[0], palette], 'paletteuse')
         return vstream, astream, {}
     @commands.command()
     async def gif(self, ctx, fps : int = 24):
-        fps = max(1, min(gif, 24))
+        fps = max(1, min(fps, 24))
         await video_creator.apply_filters_and_send(ctx, self._gif, {'is_gif':True, 'fps':fps})
 
     
@@ -42,6 +44,7 @@ class Utility(commands.Cog):
         
     
     async def _timestamp(self, ctx, vstream, astream, kwargs):
+        speed_change = kwargs['speed_change']
         vstream = (
             vstream
             .filter('fps', fps=100)
@@ -54,13 +57,15 @@ class Utility(commands.Cog):
                 escape_text=False
             )
         )
+        if(speed_change != 1.0):
+            vstream, astream = filter_helper.apply_speed(vstream, astream, speed_change)
         return vstream, astream, {}
     @commands.command()
-    async def timestamp(self, ctx):
-        await video_creator.apply_filters_and_send(ctx, self._timestamp, {'is_ignored_mp4':True})
+    async def timestamp(self, ctx, speed_change : float = 1.0):
+        await video_creator.apply_filters_and_send(ctx, self._timestamp, {'is_ignored_mp4':True, 'speed_change':speed_change})
     @commands.command()
-    async def time(self, ctx):
-        await self.timestamp(ctx)
+    async def time(self, ctx, speed_change : float = 1.0):
+        await self.timestamp(ctx, speed_change)
 
     
     @commands.command()

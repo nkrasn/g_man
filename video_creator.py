@@ -86,7 +86,12 @@ async def apply_filters_and_send(ctx, code, kwargs):
                 ffmpeg_output.run(cmd='ffmpeg-static/ffmpeg', overwrite_output=True, capture_stderr=True)
 
             await set_progress_bar(ctx, 3)
-            await ctx.send(file=discord.File(output_filename))
+            try:
+                await ctx.send(file=discord.File(output_filename))
+            except Exception as e:
+                resulting_filesize = os.path.getsize(output_filename) / 1000000
+                await ctx.send(f"File too big to send ({resulting_filesize} mb)")
+
         except asyncio.TimeoutError as e:
             await ctx.send(f'Command took to long to execute.\n```\n{str(e)}```')
         # Making errors a little easier to understand
