@@ -20,6 +20,7 @@ You can get this link from within Discord by sending "!help" in a channel
 * A MongoDB database
   * The bot looks for a database called `gman`. It uses a collection called `inventory` for the bookmark system and `videos` for keeping track of videos sent.
 * ffmpeg-python
+* ffprobe-python
 * youtube_dl
 * AviGlitch, see https://github.com/ucnv/aviglitch for installation instructions.
 

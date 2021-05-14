@@ -4,7 +4,7 @@ import discord
 import asyncio
 import os
 import media_cache
-
+from ffprobe import FFProbe
 
 loading_emotes = [
     '\U0001F1EC',
@@ -12,8 +12,8 @@ loading_emotes = [
     '\U0001F1E6',
     '\U0001F1F3'
 ]
-async def set_progress_bar(ctx, idx):
-    await ctx.message.add_reaction(loading_emotes[idx])
+async def set_progress_bar(message, idx):
+    await message.add_reaction(loading_emotes[idx])
 
 async def print_ffmpeg_error(ctx, e):
     err_full = str(e.stderr.decode('utf8'))
@@ -29,13 +29,12 @@ async def print_ffmpeg_error(ctx, e):
 
 # Download the video, then wrap the filter code in a try catch statement
 async def apply_filters_and_send(ctx, code, kwargs):
-    #await ctx.message.add_reaction('\U0001F4AC')
-    await set_progress_bar(ctx, 0)
+    await set_progress_bar(ctx.message, 0)
     input_vid, is_yt, result = await media_cache.download_last_video(ctx)
     if(not result):
         await ctx.send("There was an error downloading the video, try uploading the video again.")
         return
-    await set_progress_bar(ctx, 1)
+    await set_progress_bar(ctx.message, 1)
 
     is_mp3 = False
     is_gif = False
@@ -64,11 +63,11 @@ async def apply_filters_and_send(ctx, code, kwargs):
             vstream = input_stream.video
             astream = input_stream.audio
             vstream, astream, output_params = await code(ctx, vstream, astream, kwargs)
-            if('fs' not in output_params):
-                output_params['fs'] = '7M'
+            if('fs' in output_params):
+                del output_params['fs']
             if('movflags' not in output_params):
                 output_params['movflags'] = 'faststart'
-            await set_progress_bar(ctx, 2)
+            await set_progress_bar(ctx.message, 2)
 
             ffmpeg_output = None
             if(is_mp3):
@@ -78,6 +77,7 @@ async def apply_filters_and_send(ctx, code, kwargs):
             else:
                 ffmpeg_output = ffmpeg.output(astream, vstream, output_filename, **output_params)
 
+            # Pass 1
             try:
                 ffmpeg_output.run(cmd='ffmpeg-static/ffmpeg', overwrite_output=True, capture_stderr=True)
             except ffmpeg._run.Error as e:
@@ -85,12 +85,32 @@ async def apply_filters_and_send(ctx, code, kwargs):
                 ffmpeg_output = ffmpeg.output(vstream, output_filename, **output_params)
                 ffmpeg_output.run(cmd='ffmpeg-static/ffmpeg', overwrite_output=True, capture_stderr=True)
 
-            await set_progress_bar(ctx, 3)
+            # Pass 2 (if the file is too big)
+            resulting_filesize = os.path.getsize(output_filename) / 1000000
+            if(resulting_filesize > 7.9):
+                # Calculate bitrate needed
+                longest_duration = 0
+                metadata = FFProbe(output_filename)
+                for stream in metadata.streams:
+                    if(stream.is_video() or stream.is_audio()):
+                        duration = stream.duration_seconds()
+                        longest_duration = max(longest_duration, duration)
+                output_params['b:v'] = 7500000 / longest_duration
+
+                # Create the new video
+                input_filename_pass2 = 'vids/pass2' + output_filename.split('/')[1]
+                os.rename(output_filename, input_filename_pass2)
+                input_stream = ffmpeg.input(input_filename_pass2)
+                ffmpeg.output(input_stream, output_filename, **output_params).run(cmd='ffmpeg-static/ffmpeg', overwrite_output=True, capture_stderr=True)
+                os.remove(input_filename_pass2)
+
+
+            await set_progress_bar(ctx.message, 3)
             try:
                 await ctx.send(file=discord.File(output_filename))
             except Exception as e:
                 resulting_filesize = os.path.getsize(output_filename) / 1000000
-                await ctx.send(f"File too big to send ({resulting_filesize} mb)")
+                gman_msg = await ctx.send(f"File too big to send ({resulting_filesize} mb)")
 
         except asyncio.TimeoutError as e:
             await ctx.send(f'Command took to long to execute.\n```\n{str(e)}```')
@@ -118,12 +138,12 @@ async def apply_filters_and_send(ctx, code, kwargs):
 # Convert corrupted video to mp4
 # Very repetitive, maybe there's a way to combine the two wrappers
 async def apply_corruption_and_send(ctx, code, code_kwargs, avi_kwargs = {}, mp4_kwargs = {}):
-    await set_progress_bar(ctx, 0)
+    await set_progress_bar(ctx.message, 0)
     input_vid, is_yt, result = await media_cache.download_last_video(ctx)
     if(not result):
         await ctx.send("Error downloading the video")
         return
-    await set_progress_bar(ctx, 1)
+    await set_progress_bar(ctx.message, 1)
 
     avi_filename = f'vids/{ctx.message.id}.avi'
     output_filename = f'vids/{ctx.message.id}.mp4'
@@ -141,7 +161,7 @@ async def apply_corruption_and_send(ctx, code, code_kwargs, avi_kwargs = {}, mp4
             successful_corrupt = True
             try:
                 await code(ctx, avi_filename, code_kwargs)
-                await set_progress_bar(ctx, 2)
+                await set_progress_bar(ctx.message, 2)
             except Exception as e:
                 await ctx.send(f'Error while corrupting the video: {e}')
                 print(e)
@@ -154,7 +174,7 @@ async def apply_corruption_and_send(ctx, code, code_kwargs, avi_kwargs = {}, mp4
                     .output(output_filename, fs='7M', **mp4_kwargs)
                     .run(cmd='ffmpeg-static/ffmpeg', overwrite_output=True, capture_stderr=True)
                 )
-                await set_progress_bar(ctx, 3)
+                await set_progress_bar(ctx.message, 3)
                 await ctx.send(file=discord.File(output_filename))
         except asyncio.TimeoutError as e:
             await ctx.send(f'Command took to long to execute.\n```\n{str(e)}```')

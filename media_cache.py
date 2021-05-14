@@ -11,6 +11,7 @@ MAX_MEM_PER_CHANNEL = 8
 yt_regex = (r'(https?://)?(www\.)?(m\.youtube|youtube|youtu|youtube-nocookie)\.(com|be)/(watch\?v=|embed/|v/|.+\?v=)?([^&=%\?]{11})')
 discord_cdn_regex = (r'https://(cdn|media)\.discordapp\.(com|net)/attachments/.+\.(mp4|MP4|webm|WEBM|mov|MOV|mkv|MKV)')
 twitter_regex = (r'(https?://)?(www\.)?(mobile\.)?twitter\.com/.+/status/[0-9]+(\?.+)?')
+tumblr_regex = (r'(https?://)?(www\.)?((va\.media\.tumblr\.com/tumblr_.+\.(mp4|MP4|webm|WEBM|mov|MOV|mkv|MKV))|(.+\.tumblr\.com/(post|video/.+)/[0-9]+(/[0-9]+/)?))')
 
 audio_filetypes = ['mp3', 'ogg', 'wav']
 approved_filetypes = ['mp4', 'mov', 'avi', 'webm', 'flv', 'wmv', 'mkv'] + audio_filetypes
@@ -85,7 +86,7 @@ async def download_nth_video(ctx, n):
     input_vid = input_vid[n]
     #await ctx.send(f'working on `{input_vid}`')
     is_yt = True # TODO: remove this flag, all videos will be downloaded now instead of passing URL to ffmpeg
-    if(re.match(yt_regex, input_vid) or re.match(twitter_regex, input_vid)): # yt video
+    if(re.match(yt_regex, input_vid) or re.match(twitter_regex, input_vid) or re.match(tumblr_regex, input_vid)): # yt video
         is_yt = True
         result, input_vid = await yt(ctx, input_vid, ctx.message.id)#n)
         if(not result):

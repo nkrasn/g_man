@@ -9,6 +9,7 @@ import re
 import os
 import shlex
 import ffmpeg
+from ffprobe import FFProbe
 import random
 import re
 import video_creator
@@ -485,17 +486,30 @@ class Filter(commands.Cog):
 
 
     async def _concat(self, ctx, vstream, astream, kwargs):
-        first_stream = ffmpeg.input(kwargs['first_vid_filepath'])
+        first_vid_filepath = kwargs['first_vid_filepath']
+        second_vid_filepath = kwargs['input_filename']
+
+        target_width = 640
+        target_height = 480
+        first_vid_metadata = FFProbe(first_vid_filepath)
+        second_vid_metadata = FFProbe(second_vid_filepath)
+        for stream in first_vid_metadata.streams + second_vid_metadata.streams:
+            if(stream.is_video()):
+                width, height = stream.frame_size()
+                target_width = min(target_width, width)
+                target_height = min(target_height, height)
+
+        first_stream = ffmpeg.input(first_vid_filepath)
         vfirst = (
             first_stream.video
-            .filter('scale', w=640, h=480)
+            .filter('scale', w=target_width, h=target_height)
             .filter('setsar', r='1:1')
         )
         afirst = first_stream.audio
         
         vstream = (
             vstream
-            .filter('scale', w=640, h=480)
+            .filter('scale', w=target_width, h=target_height)
             .filter('setsar', r='1:1')
         )
 
@@ -654,6 +668,20 @@ class Filter(commands.Cog):
     @commands.command(pass_context=True)
     async def hue(self, ctx, degrees : str):
         await video_creator.apply_filters_and_send(ctx, self._hue, {'h':degrees})
+
+    
+    async def _interpolate(self, ctx, vstream, astream, kwargs):
+        fps = kwargs['fps']
+        vstream = (
+            vstream
+            .filter('fps', fps=fps)
+            .filter('minterpolate', mi_mode='mci', mc_mode='obmc')
+        )
+        return vstream, astream, {}
+    @commands.command(pass_context=True)
+    async def interpolate(self, ctx, fps : int = 5):
+        fps = max(1, min(30, fps))
+        await video_creator.apply_filters_and_send(ctx, self._interpolate, {'fps':fps})
 
 
     async def _invert(self, ctx, vstream, astream, kwargs):

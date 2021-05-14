@@ -58,9 +58,9 @@ async def on_message(message):
     elif(re.match(media_cache.discord_cdn_regex, message.content)):
         media_cache.add_to_cache(message, message.content)
         print("Added discord cdn url!")
-    elif(re.match(media_cache.yt_regex, message.content) or re.match(media_cache.twitter_regex, message.content)):
+    elif(re.match(media_cache.yt_regex, message.content) or re.match(media_cache.twitter_regex, message.content) or re.match(media_cache.tumblr_regex, message.content)):
         media_cache.add_to_cache(message, message.content)
-        print("Added yt/twitter url! " + message.content)
+        print("Added yt/twitter/tumblr url! " + message.content)
 
     await bot.process_commands(message)
 

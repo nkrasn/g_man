@@ -5,10 +5,21 @@ import video_creator
 import database as db
 import ffmpeg
 import filter_helper
+import media_cache
 
 class Utility(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+
+    
+    async def _download(self, ctx, vstream, astream, kwargs):
+        return vstream, astream, {}
+    @commands.command()
+    async def download(self, ctx):
+        await video_creator.apply_filters_and_send(ctx, self._download, {})
+    @commands.command()
+    async def fix(self, ctx):
+        await self.download(ctx)
     
 
     async def _gif(self, ctx, vstream, astream, kwargs):
@@ -21,6 +32,13 @@ class Utility(commands.Cog):
     async def gif(self, ctx, fps : int = 24):
         fps = max(1, min(fps, 24))
         await video_creator.apply_filters_and_send(ctx, self._gif, {'is_gif':True, 'fps':fps})
+    
+
+    @commands.command()
+    async def link(self, ctx):
+        vid_link = media_cache.get_from_cache(str(ctx.message.channel.id))[0]
+        await ctx.send(f'`{vid_link}`')
+
 
     
     async def _mp3(self, ctx, vstream, astream, kwargs):

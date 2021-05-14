@@ -23,7 +23,7 @@ _Note_: You can use `k` for kilobits in your parameters. Examples: `4.3k` instea
 | bitcrush | `!bitcrush <samples> <bits>` | `1 to inf`<br>`1 to inf` | Bitcrushes the audio. By default, `<samples>` is 32 and `<bits>` is 2. Higher values make a more crushed sound. | `!bitcrush`<br><br>`!bitcrush 64`<br><br>`!bitcrush 8 8` |
 | blur | `!blur <amount>` | `1 - 127` | Blur the video. \<amount\> represents the radius of the blur around each pixel. | `!blur 10` |
 | brightness | `!brightness <amount>` | `-1 to 1` | Adjust the brightness of a video. | `!brightness 2` |
-| concat<br>merge | `!concat` | | Combine the two most recently sent videos. Most recent video will be played after the second to most recent. | `!concat` |
+| concat<br>merge | `!concat` | | Combine the two most recently sent videos. Most recent video will be played after the second to most recent. Video resolution will be the smallest width and height of both videos. | `!concat` |
 | contrast | `!contrast <amount>` | `-1000 to 1000` | Change the video's contrast. | `!contrast 2` |
 | edges | `!edges` | | Show only the edges in the video. | `!edges` |
 | equalize<br>equalizer | `!equalize <b1> <b2> ... <b17> <b18>` | `0 to inf` | 18 band equalizer. More information here: https://ffmpeg.org/ffmpeg-filters.html#superequalizer<br>You can provide a number for each frequency band. If you don't provide a value, or set a value as -1, it is set to a random number between 0 and 20. | `!equalize 10 10 -1 5 5 0 0` |
@@ -32,6 +32,7 @@ _Note_: You can use `k` for kilobits in your parameters. Examples: `4.3k` instea
 | gamma | `!gamma <amount>` | `0.1 to 10` | Change the video's gamma. | `!gamma 1.2` |
 | greenscreen | `!greenscreen <color> <sensitivity>` | sensitivity: `0.01 to 1` | Use the second to most recent video as a greenscreen and place it on top of the most recent video. Without any parameters, `#00FF00` is used as the greenscreen \<color\>, and 0.3 as the \<sensitivity\>.<br><br>\<color\> can be specified as a hexcode starting with #, or as the name of a color (see https://ffmpeg.org/ffmpeg-utils.html#Color).<br><br>\<sensitivity\> specifies how similar a pixel has to be to \<color\> to become transparent. A lower \<sensitivity\> means colors have to be more similar to \<color\> to become transparent. | `!greenscreen`<br><br>`!greenscreen #0000ff`<br><br>`!greenscreen LightGreen 0.1` |
 | hue | `!hue <degrees>` | `-inf to inf` | Change the video's hue. | `!hue 180` |
+| interpolate | `!interpolate <fps>` | `1 to 30` | Set the video's framerate to `<fps>`, then interpolate to a high framerate. Default `<fps>` is 5. | `!interpolate`<br><br>`!interpolate 10` |
 | invert<br>inverse<br>negate<br>negative | `!invert` | | Invert the video's colors. | `!invert` |
 | lagfun | `!lagfun <amount>` | `0 to 1` | Makes darker pixels update slower. This can create an interesting smearing effect with lighter pixels. A higher \<amount\> makes the smearing last longer, with a value of 1 causing bright colors to never disappear. Values close to 0.96 create very noticable results. | `!lagfun 0.99` |
 | loop | `!loop <amount>` | `2 to 20` | Loop the video. | `!loop 5` |
@@ -91,6 +92,7 @@ You can bookmark videos and load them in any server with g_man. Bookmark labels 
 # Utility
 | Command | Format | Min/Max Values | Description | Examples |
 | --- | --- | --- | --- | --- |
+| download<br>fix | `!download` | | Downloads the last video sent and sends it as an MP4. Useful for downloading youtube/twitter videos and fixing videos Discord has trouble playing. | `!download` |
 | gif | `!gif <fps>` | `1 to 24` | Convert the video to a GIF. Default `<fps>` is 24, consider lowering this number or scaling the video down if the GIF gets cut off. | `!gif`<br><br>`!gif 12`|
 | mp3 | `!mp3` | | Convert the video to an mp3. | `!mp3`|
 | swap | `!swap` | | Swap the last two videos sent, simply by reposting the second to last video. | `!swap` |

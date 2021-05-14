@@ -80,7 +80,7 @@ class Corruption(commands.Cog):
             return
 
         # download the video...
-        await video_creator.set_progress_bar(ctx, 0)
+        await video_creator.set_progress_bar(ctx.message, 0)
         async with ctx.typing():
             input_vid, is_yt, result = await media_cache.download_last_video(ctx)
             if(not result):
@@ -103,17 +103,17 @@ class Corruption(commands.Cog):
                 .output(output_filename, fs='7M', **output_params)
                 .run(cmd='ffmpeg-static/ffmpeg', overwrite_output=True)
             )
-        await video_creator.set_progress_bar(ctx, 1)
+        await video_creator.set_progress_bar(ctx.message, 1)
 
         # apply corrupted timestamp...
         was_successful = True
         async with ctx.typing():
             was_successful = await self._faketime(ctx, output_filename, fake_type)
-        await video_creator.set_progress_bar(ctx, 2)
+        await video_creator.set_progress_bar(ctx.message, 2)
 
         # send vid...
         if(was_successful):
-            await video_creator.set_progress_bar(ctx, 3)
+            await video_creator.set_progress_bar(ctx.message, 3)
             await ctx.send(file=discord.File(output_filename))
 
         # Remove files
