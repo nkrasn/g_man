@@ -9,6 +9,7 @@ import re
 import os
 import shlex
 import ffmpeg
+import math
 from ffprobe import FFProbe
 import random
 import re
@@ -756,6 +757,19 @@ class Filter(commands.Cog):
     async def retro(self, ctx, color_count : int = 4):
         color_count = max(1, min(255, color_count))
         await video_creator.apply_filters_and_send(ctx, self._retro, {'color_count':color_count})
+
+
+    async def _rotate(self, ctx, vstream, astream, kwargs):
+        angle = kwargs['angle']
+        vstream = vstream.filter('rotate', a=angle)
+        return vstream, astream, {}
+    @commands.command()
+    async def rotate(self, ctx, degrees : float = 45):
+        angle = math.radians(degrees)
+        await video_creator.apply_filters_and_send(ctx, self._rotate, {'angle':angle})
+    @commands.command()
+    async def rotaterad(self, ctx, *, radians : str = '0.785398163'):
+        await video_creator.apply_filters_and_send(ctx, self._rotate, {'angle':radians})
 
 
     async def _saturation(self, ctx, vstream, astream, kwargs):

@@ -455,6 +455,34 @@ class Fun(commands.Cog):
             'wrapped_title':wrapped_title, 
             'title_font_size':title_font_size, 'sub_font_size':sub_font_size
         })
+    
+    async def _vintage(self, ctx, vstream, astream, kwargs):
+        vstream = (
+            vstream
+            .filter('scale', w=100, h=-2)
+            .filter('noise', alls=50, allf='t+u')
+            .filter('scale', w=480, h=-2)
+            .filter('hue', s=0)
+            .filter('vignette')
+            .filter('vignette')
+            .filter('fps', fps=60)
+            .filter('scroll', v=1.0/100.0)
+            .filter('fps', fps=29)
+            .filter('scroll', v=-(60.0/29.0)/100.0)
+            .filter('fps', 6)
+        )
+
+        eq_vals = [5]*4 + [4]*2 + [3] + [2]*2 + [1]*2 + [0]*7
+        eq_dict = {}
+        for i in range(18):
+            eq_dict[f'{i+1}b'] = eq_vals[i]
+        astream = astream.filter('superequalizer', **eq_dict)
+
+        return vstream, astream, {}
+    @commands.command()
+    async def vintage(self, ctx):
+        await video_creator.apply_filters_and_send(ctx, self._vintage, {})
+
         
 
 
