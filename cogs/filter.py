@@ -764,12 +764,12 @@ class Filter(commands.Cog):
         vstream = vstream.filter('rotate', a=angle)
         return vstream, astream, {}
     @commands.command()
-    async def rotate(self, ctx, degrees : float = 45):
+    async def rotate(self, ctx, *, radians : str = '0.785398163'):
+        await video_creator.apply_filters_and_send(ctx, self._rotate, {'angle':radians})
+    @commands.command()
+    async def rotatedeg(self, ctx, degrees : float = 45):
         angle = math.radians(degrees)
         await video_creator.apply_filters_and_send(ctx, self._rotate, {'angle':angle})
-    @commands.command()
-    async def rotaterad(self, ctx, *, radians : str = '0.785398163'):
-        await video_creator.apply_filters_and_send(ctx, self._rotate, {'angle':radians})
 
 
     async def _saturation(self, ctx, vstream, astream, kwargs):
