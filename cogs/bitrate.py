@@ -1,11 +1,11 @@
-import discord
 import asyncio
+import discord
 from discord.ext import commands
-import youtube_dl
+import ffmpeg
 import media_cache
 import re
-import ffmpeg
 import video_creator
+import youtube_dl
 
 class Bitrate(commands.Cog):
     def __init__(self, bot):

@@ -1,16 +1,15 @@
-import discord
 import asyncio
+import discord
 from discord.ext import commands
+import ffmpeg
+import media_cache
+import os
+import random
+import re
 import subprocess
 from subprocess import Popen
-import youtube_dl
-import random
-import os
-import media_cache
-import re
-import os
-import ffmpeg
 import video_creator
+import youtube_dl
 
 class Corruption(commands.Cog):
     def __init__(self, bot):

@@ -1,10 +1,10 @@
-import traceback
-import ffmpeg
-import discord
 import asyncio
-import os
-import media_cache
+import discord
+import ffmpeg
 from ffprobe import FFProbe
+import media_cache
+import os
+import traceback
 
 loading_emotes = [
     '\U0001F1EC',

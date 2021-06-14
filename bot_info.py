@@ -1,6 +1,6 @@
-import json
 import discord
 from discord.ext import commands
+import json
 
 # Load bot info (contains bot login, owners/admins, and MongoDB connection url)
 data = None

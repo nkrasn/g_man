@@ -1,20 +1,19 @@
-import discord
 import asyncio
+import discord
 from discord.ext import commands
-import subprocess
-from subprocess import Popen
-import youtube_dl
-import media_cache
-import re
-import os
-import shlex
 import ffmpeg
-import math
 from ffprobe import FFProbe
+import filter_helper
+import math
+import media_cache
+import os
 import random
 import re
+import shlex
+import subprocess
+from subprocess import Popen
 import video_creator
-import filter_helper
+import youtube_dl
 
 class Filter(commands.Cog):
     def __init__(self, bot):

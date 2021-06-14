@@ -1,13 +1,13 @@
-import discord
 import asyncio
-from discord.ext import commands
 import bot_info
-import sys
-import media_cache
-import re
-import os
-import traceback
 import database as db
+import discord
+from discord.ext import commands
+import media_cache
+import os
+import re
+import sys
+import traceback
 
 
 # If any videos were not deleted while the bot was last up, remove them
@@ -93,11 +93,6 @@ for ex in extensions:
         bot.load_extension(ex)
     except Exception as e:
         print('Failed to load {} because: {}'.format(ex, e))
-    
-# Help command
-@bot.command()
-async def help(ctx):
-    await ctx.send('https://github.com/nkrasn/g_man/blob/master/COMMANDS.md')
 
 
 # Start the bot

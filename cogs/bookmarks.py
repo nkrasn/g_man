@@ -1,10 +1,10 @@
-import discord
 import asyncio
-from discord.ext import commands
-import pymongo
-import media_cache
-import string
 import database as db
+import discord
+from discord.ext import commands
+import media_cache
+import pymongo
+import string
 
 class Bookmarks(commands.Cog):
     def __init__(self, bot):

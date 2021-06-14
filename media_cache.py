@@ -1,11 +1,11 @@
-import re
-import youtube_dl
-import os
-import discord
-import subprocess
-import ffmpeg
-import requests
 import database as db
+import discord
+import ffmpeg
+import os
+import re
+import requests
+import subprocess
+import youtube_dl
 
 MAX_MEM_PER_CHANNEL = 8
 yt_regex = (r'(https?://)?(www\.)?(m\.youtube|youtube|youtu|youtube-nocookie)\.(com|be)/(watch\?v=|embed/|v/|.+\?v=)?([^&=%\?]{11})')
