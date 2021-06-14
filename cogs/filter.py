@@ -650,7 +650,8 @@ class Filter(commands.Cog):
 
         return vstream, astream, {}
     @commands.command()
-    async def greenscreen(self, ctx, color : str = '#00ff00', similarity : float = 0.3):
+    async def greenscreen(self, ctx, color : str = '#00ff00', similarity : float = 0.7):
+        similarity = 1.0 - similarity
         similarity = max(0.01, min(similarity, 1))
         #blend = max(0, min(blend, 1))
 
@@ -666,7 +667,7 @@ class Filter(commands.Cog):
         vstream = vstream.filter('hue', h=kwargs['h'])
         return vstream, astream, {}
     @commands.command(pass_context=True)
-    async def hue(self, ctx, degrees : str):
+    async def hue(self, ctx, degrees : str = '180'):
         await video_creator.apply_filters_and_send(ctx, self._hue, {'h':degrees})
 
     
@@ -705,7 +706,7 @@ class Filter(commands.Cog):
         vstream = vstream.filter('lagfun', decay=kwargs['decay'])
         return vstream, astream, {}
     @commands.command()
-    async def lagfun(self, ctx, decay : float = 0.99):
+    async def lagfun(self, ctx, decay : float = 0.96):
         decay = max(0, min(decay, 1.0))
         await video_creator.apply_filters_and_send(ctx, self._lagfun, {'decay':decay})
     
@@ -763,7 +764,7 @@ class Filter(commands.Cog):
         vstream = vstream.filter('rotate', a=angle)
         return vstream, astream, {}
     @commands.command()
-    async def rotate(self, ctx, *, radians : str = '0.785398163'):
+    async def rotate(self, ctx, *, radians : str = 't'):
         await video_creator.apply_filters_and_send(ctx, self._rotate, {'angle':radians})
     @commands.command()
     async def rotatedeg(self, ctx, degrees : float = 45):
@@ -836,7 +837,7 @@ class Filter(commands.Cog):
         astream = astream.filter('volume', volume=kwargs['volume'], precision='fixed')
         return vstream, astream, {}
     @commands.command(pass_context=True)
-    async def volume(self, ctx, volume_db : float):
+    async def volume(self, ctx, volume_db : float = 2.0):
         await video_creator.apply_filters_and_send(ctx, self._volume, {'volume':volume_db})    
 
 
