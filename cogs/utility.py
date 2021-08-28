@@ -5,6 +5,7 @@ import database as db
 import ffmpeg
 import filter_helper
 import media_cache
+import os
 import re
 import video_creator
 
@@ -79,13 +80,44 @@ class Utility(commands.Cog):
             if(len(command['names']) > 1):
                 aliases = list(filter(lambda x : x != command_name, command['names']))
                 aliases = ', '.join(aliases)
-                embed.set_footer(text=f'NOTE: this command is also known as:\n{aliases}')
+                footer_text = 'Alternative command name'
+                if(len(command['names']) > 2):
+                    footer_text += 's:\n'
+                else:
+                    footer_text += ': '
+                footer_text += aliases
+                embed.set_footer(text=footer_text)
 
             await ctx.send(embed=embed)
             break
 
         if(embed is None):
             await ctx.send("Command not found, here's a list of all the commands: https://github.com/nkrasn/g_man/blob/master/COMMANDS.md")
+
+        
+    # TODO: make this automatic in video_creator.py
+    @commands.command()
+    async def img2vid(self, ctx):
+        await video_creator.set_progress_bar(ctx.message, 0)
+        img_link = media_cache.get_from_cache(str(ctx.message.channel.id))[-1]
+        output_filename = 'vids/' + str(ctx.message.channel.id) + '.mp4'
+        await video_creator.set_progress_bar(ctx.message, 1)
+
+        try:
+            input_stream = ffmpeg.input(img_link, loop=1).filter('scale', w=240, h=-2)
+            dummy_audio = ffmpeg.input('clips/americ.mp3').filter('volume', volume=-1000, precision='fixed')
+            output = ffmpeg.output(input_stream, dummy_audio, output_filename, t=1)
+            await video_creator.set_progress_bar(ctx.message, 2)
+            output.run(cmd='ffmpeg-static/ffmpeg', overwrite_output=True, capture_stderr=True)
+            await video_creator.set_progress_bar(ctx.message, 3)
+            await ctx.send(file=discord.File(output_filename))
+        except ffmpeg.Error as e:
+            await video_creator.print_ffmpeg_error(ctx, e)
+        except Exception as e:
+            await ctx.send(f'Couldn\'t convert image to video: ```\n{str(e)}```')
+        if(os.path.isfile(output_filename)):
+            os.remove(output_filename)
+        await ctx.message.clear_reactions()
 
 
     @commands.command()

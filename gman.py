@@ -52,12 +52,12 @@ async def on_message(message):
     # Adding URLs to the cache
     if(len(message.attachments) > 0):
         msg_url = message.attachments[0].url
-        if(not msg_url.endswith('_ignore.mp4') and msg_url.split('.')[-1] in media_cache.approved_filetypes):
+        if(not msg_url.endswith('_ignore.mp4') and msg_url.split('.')[-1].lower() in media_cache.approved_filetypes):
             media_cache.add_to_cache(message, message.attachments[0].url)
             print("Added file!")
-    elif(re.match(media_cache.discord_cdn_regex, message.content)):
+    elif(re.match(media_cache.discord_cdn_regex, message.content) or re.match(media_cache.hosted_file_regex, message.content)):
         media_cache.add_to_cache(message, message.content)
-        print("Added discord cdn url!")
+        print("Added discord cdn/hosted file url!")
     elif(re.match(media_cache.yt_regex, message.content) or re.match(media_cache.twitter_regex, message.content) or re.match(media_cache.tumblr_regex, message.content)):
         media_cache.add_to_cache(message, message.content)
         print("Added yt/twitter/tumblr url! " + message.content)

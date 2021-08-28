@@ -1,3 +1,4 @@
+import ast
 import asyncio
 import discord
 from discord.ext import commands
@@ -581,18 +582,45 @@ class Filter(commands.Cog):
         astream = astream.filter('atrim', **trim_kwargs).filter('asetpts', expr='PTS-STARTPTS')
         return (vstream, astream, {})
     @commands.command()
-    async def extract(self, ctx, start : str = 'default', end : str = 'default'):
+    async def extract(self, ctx, *, msg : str = ''):
         sec_regex = r'[0-9]+(\.[0-9]+)?'
         min_regex = r'[0-9][0-9]?\:[0-9][0-9](\.[0-9]+)?'
-        start_regex = '|'.join((r'start', sec_regex, min_regex))
-        end_regex = '|'.join((r'end', sec_regex, min_regex))
-        if(start == 'default'): # No arguments provided...
+        start_regex = r'(' + '|'.join((r'start', sec_regex, min_regex)) + r')$'
+        end_regex = r'(' + '|'.join((r'end', sec_regex, min_regex)) + r')$'
+        bookmark_regex = r'^as(( *)|( +.*))'
+
+        start = ''
+        end = 'default'
+        bookmark_name = None
+        args = msg.split(' ', 1) # assuming no bookmark name is provided
+        args_b = msg.split(' ', 2) # assuming bookmark name is provided
+
+        # Start
+        start = args[0]
+        if(re.match(start_regex, start) is None):
             return
+
+        # End and/or bookmark
+        if(len(args) == 2):
+            # Assuming only end timestamp or only bookmark name
+            if(re.match(end_regex, args[1])):
+                end = args[1]
+            elif(re.match(bookmark_regex, args[1])):
+                bookmark_name = args[1]
+            # Assuming both end timestamp and bookmark name
+            elif(len(args_b) == 3 and re.match(end_regex, args_b[1]) and re.match(bookmark_regex, args_b[2])):
+                end = args_b[1]
+                bookmark_name = args_b[2]
+            # Nothing made sense
+            else:
+                await ctx.send("I don't understand what you're trying to do.\nIf you're trying to save the extraction as a bookmark, make sure you say `as bookmark name` rather than just `bookmark name`. (example: `!extract 3.5 as cool video`)")
+                return
+
         if(start == 'start' and (end == 'default' or end == 'end')): # Abort if extracting start to end
             return
-        # Abort if arguments aren't the valid
-        if(re.match(start_regex, start) is None or re.match(end_regex + r'|default', end) is None):
-            return
+        
+        if(bookmark_name is not None):
+            bookmark_name = bookmark_name.split(' ', 1)[1] # Removing the "as " at the start
         
         # None = start/end of video
         if(end == 'default'): # If only one argument provided, make it extract starting from the beginning
@@ -605,6 +633,9 @@ class Filter(commands.Cog):
                 end = None
 
         await video_creator.apply_filters_and_send(ctx, self._extract, {'start':start, 'end':end})
+        if(bookmark_name is not None):
+            await self.bot.get_cog('Bookmarks').save(ctx, label=bookmark_name)
+            await self.bot.get_cog('Utility').swap(ctx)
     
 
     async def _fps(self, ctx, vstream, astream, kwargs):
@@ -828,7 +859,10 @@ class Filter(commands.Cog):
         vstream, astream = filter_helper.apply_speed(vstream, astream, speed_change)
         return vstream, astream, {}
     @commands.command()
-    async def speed(self, ctx, speed_change : float = 2.0):
+    async def speed(self, ctx, speed_change : str = '2.0'):
+        speed_change = filter_helper.eval_arithmetic(speed_change)
+        if(speed_change is None):
+            return
         speed_change = max(0.05, speed_change)
         await video_creator.apply_filters_and_send(ctx, self._speed, {'speed_change': speed_change})
     
@@ -842,7 +876,11 @@ class Filter(commands.Cog):
 
 
     async def _wobble(self, ctx, vstream, astream, kwargs):
-        astream = astream.filter('chorus', delays='80ms', decays=1, depths=4, speeds=kwargs['speeds'])
+        astream = (
+            astream
+            .filter('chorus', delays='80ms', decays=1, depths=4, speeds=kwargs['speeds'])
+            .filter('volume', volume=2, precision='fixed')
+        )
         return vstream, astream, {}
     @commands.command(pass_context=True)
     async def wobble(self, ctx, speed : str = '8'):

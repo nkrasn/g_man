@@ -1,3 +1,6 @@
+import ast
+
+# Functions that apply filters
 def apply_speed_v(vstream, speed_change):
     speed_change = max(0.05, speed_change)
     if(speed_change >= 0.5):
@@ -30,3 +33,17 @@ def apply_speed(vstream, astream, speed_change):
     vstream = apply_speed_v(vstream, speed_change)
     astream = apply_speed_a(astream, speed_change)
     return vstream, astream
+
+
+
+# Functions that don't apply filters
+def eval_arithmetic(expression):
+    tree = None
+    try:
+        tree = ast.parse(expression, mode='eval')
+    except SyntaxError:
+        return None
+    if not all(isinstance(node, (ast.Expression, ast.UnaryOp, ast.unaryop, ast.BinOp, ast.operator, ast.Num)) for node in ast.walk(tree)):
+        return None
+    
+    return eval(compile(tree, filename='', mode='eval'))

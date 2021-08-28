@@ -21,8 +21,12 @@ class Fun(commands.Cog):
 
     async def _replace_audio(self, ctx, vstream, astream, kwargs):
         audio_filename = kwargs['audio_filename']
-        astream = ffmpeg.input(f'clips/{audio_filename}')
-        return (vstream, astream, {'shortest':None, 'vcodec':'copy'})
+        if(os.path.isfile(f'clips/{audio_filename}')):
+            astream = ffmpeg.input(f'clips/{audio_filename}')
+            return (vstream, astream, {'shortest':None, 'vcodec':'copy'})
+        else:
+            await ctx.send(f'Could not find `{audio_filename}` in my `clips` folder! Please report this error to the g_man Discord server.')
+            return None, None, {'ignore':True}
 
 
     @commands.command(pass_context=True)
@@ -39,6 +43,26 @@ class Fun(commands.Cog):
     @commands.command(pass_context=True)
     async def cartoon(self, ctx):
         await self.cartoony(ctx)
+
+    
+    async def _deepfry(self, ctx, vstream, astream, kwargs):
+        vstream = (
+            vstream
+            .filter('scale', w=240, h=-2)
+            .filter('eq', contrast=2, saturation=2)
+            .filter('unsharp', luma_msize_x=7, luma_msize_y=7, luma_amount=2.5)
+            .filter('eq', contrast=4, saturation=3)
+            .filter('scale', w=360, h=-2)
+        )
+        astream = (
+            astream
+            .filter('crystalizer', i=10)
+            .filter('volume', volume=2, precision='fixed')
+        )
+        return vstream, astream, {}
+    @commands.command()
+    async def deepfry(self, ctx):
+        await video_creator.apply_filters_and_send(ctx, self._deepfry, {})
 
 
     async def _demonize(self, ctx, vstream, astream, kwargs):
@@ -148,6 +172,14 @@ class Fun(commands.Cog):
     @commands.command()
     async def ifunny(self, ctx):
         await video_creator.apply_filters_and_send(ctx, self._watermark, {'watermark_filepath':'clips/ifunny.jpg', 'x':'main_w-overlay_w', 'y':'main_h-overlay_h', 'w':-2, 'h':16})
+
+    
+    @commands.command()
+    async def mahna(self, ctx):
+        await video_creator.apply_filters_and_send(ctx, self._replace_audio, {'audio_filename':'mahna.mp3'})
+    @commands.command()
+    async def mahnamahna(self, ctx):
+        await self.mahna(ctx)
 
 
     async def _pingpong(self, ctx, vstream, astream, kwargs):
