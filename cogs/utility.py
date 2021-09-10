@@ -1,4 +1,5 @@
 import asyncio
+from genericpath import isfile
 import discord
 from discord.ext import commands
 import database as db
@@ -7,6 +8,8 @@ import filter_helper
 import media_cache
 import os
 import re
+import requests
+import subprocess
 import video_creator
 
 class Utility(commands.Cog):
@@ -99,24 +102,24 @@ class Utility(commands.Cog):
     @commands.command()
     async def img2vid(self, ctx):
         await video_creator.set_progress_bar(ctx.message, 0)
-        img_link = media_cache.get_from_cache(str(ctx.message.channel.id))[-1]
+        input_filepath = media_cache.get_from_cache(str(ctx.message.channel.id))[-1]
         output_filename = 'vids/' + str(ctx.message.channel.id) + '.mp4'
         await video_creator.set_progress_bar(ctx.message, 1)
 
-        try:
-            input_stream = ffmpeg.input(img_link, loop=1).filter('scale', w=240, h=-2)
-            dummy_audio = ffmpeg.input('clips/americ.mp3').filter('volume', volume=-1000, precision='fixed')
-            output = ffmpeg.output(input_stream, dummy_audio, output_filename, t=1)
-            await video_creator.set_progress_bar(ctx.message, 2)
-            output.run(cmd='ffmpeg-static/ffmpeg', overwrite_output=True, capture_stderr=True)
-            await video_creator.set_progress_bar(ctx.message, 3)
-            await ctx.send(file=discord.File(output_filename))
-        except ffmpeg.Error as e:
-            await video_creator.print_ffmpeg_error(ctx, e)
-        except Exception as e:
-            await ctx.send(f'Couldn\'t convert image to video: ```\n{str(e)}```')
+        await video_creator.set_progress_bar(ctx.message, 2)
+        subprocess.run([
+            'ffmpeg',
+            '-loop', '1',
+            '-i', f'{input_filepath}',
+            '-t', '1',
+            output_filename
+        ])
+        await video_creator.set_progress_bar(ctx.message, 3)
         if(os.path.isfile(output_filename)):
+            await ctx.send(file=discord.File(output_filename))
             os.remove(output_filename)
+        else:
+            await ctx.send(f'There was an error converting the image (`{input_filepath}`) to a video.')
         await ctx.message.clear_reactions()
 
 
