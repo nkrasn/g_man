@@ -6,6 +6,12 @@ import media_cache
 import os
 import traceback
 
+boost_info = [
+    { 'mb': 7.9, 'bits': 750000 },
+    { 'mb': 49.9, 'bits': 45000000 },
+    { 'mb': 99.9, 'bits': 95000000 }
+]
+
 loading_emotes = [
     '\U0001F1EC',
     '\U0001F1F2',
@@ -57,6 +63,14 @@ async def apply_filters_and_send(ctx, code, kwargs):
     else:
         output_filename += 'mp4'
     
+    boost_level = 0
+    if(ctx.guild.premium_subscription_count >= 7):
+        boost_level = 1;
+    if(ctx.guild.premium_subscription_count >= 14):
+        boost_level = 2;
+    mb_limit = boost_info[boost_level]['mb']
+    bits_limit = boost_info[boost_level]['bits']
+    
     async with ctx.typing():
         try:
             input_stream = ffmpeg.input(input_vid)
@@ -89,7 +103,7 @@ async def apply_filters_and_send(ctx, code, kwargs):
 
                 # Pass 2 (if the file is too big)
                 resulting_filesize = os.path.getsize(output_filename) / 1000000
-                if(resulting_filesize > 7.9):
+                if(resulting_filesize > mb_limit):
                     # Calculate bitrate needed
                     longest_duration = 0
                     metadata = FFProbe(output_filename)
@@ -97,7 +111,7 @@ async def apply_filters_and_send(ctx, code, kwargs):
                         if(stream.is_video() or stream.is_audio()):
                             duration = stream.duration_seconds()
                             longest_duration = max(longest_duration, duration)
-                    output_params['b:v'] = 7500000 / longest_duration
+                    output_params['b:v'] = bits_limit / longest_duration
 
                     # Create the new video
                     input_filename_pass2 = 'vids/pass2' + output_filename.split('/')[1]
