@@ -399,12 +399,12 @@ class Fun(commands.Cog):
         )
 
         # Scaling the desired video + effects
-        img_stream = ffmpeg.input('clips/hypercam.jpg').filter("scale", w=300, h=-2)
+        #img_stream = ffmpeg.input('clips/hypercam.jpg').filter("scale", w=300, h=-2)
         vstream = (
             ffmpeg
             .filter(vstream, "scale", w=640, h=480)
             .filter("setsar", r="1:1")
-            .overlay(img_stream)
+            #.overlay(img_stream)
         )
         # Appending it to the title text
         output_stream = ffmpeg.concat(output_stream, vstream)

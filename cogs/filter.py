@@ -852,6 +852,17 @@ class Filter(commands.Cog):
         h = min(100, max(-100, h)) / 100
         v = min(100, max(-100, v)) / 100
         await video_creator.apply_filters_and_send(ctx, self._scroll, {'h':h, 'v':v})
+
+    
+    async def _shader(self, ctx, vstream, astream, kwargs):
+        x = kwargs['x']
+        y = kwargs['y']
+        eq = f'=({x},{y})'
+        vstream = vstream.filter('geq', r=f'r{eq}', g=f'g{eq}', b=f'b{eq}')
+        return vstream, astream, {}
+    @commands.command()
+    async def shader(self, ctx, x, y):
+        await video_creator.apply_filters_and_send(ctx, self._shader, {'x':x, 'y':y})
     
 
     async def _speed(self, ctx, vstream, astream, kwargs):
