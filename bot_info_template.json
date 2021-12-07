@@ -1,0 +1,5 @@
+{
+    "owners": ["Your Discord user ID"],
+    "login": "Your Discord app token",
+    "mongo_url": "Your MongoDB connection url"
+}
