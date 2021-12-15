@@ -432,24 +432,18 @@ class Filter(commands.Cog):
 
     
     async def _bassboost(self, ctx, vstream, astream, kwargs):
-        treble_level = kwargs['treble_level']
-        eq = [-5] * 18
-        eq_dict = {}
-        for i in range(len(eq)):
-            arg_name = f'{i+1}b'
-            if(i < treble_level):
-                eq_dict[arg_name] = 20
+        intensity = kwargs['intensity'] * 0.25
 
         astream = (
             astream
-            .filter('superequalizer', **eq_dict)
+            .filter('volume', volume=intensity, precision='fixed')
+            .filter('superequalizer', **{'1b':20})
             .filter('volume', volume=30, precision='fixed')
         )
         return (vstream, astream, {})
     @commands.command()
-    async def bassboost(self, ctx, treble_level : int = 1):
-        treble_level = max(1, min(treble_level, 18))
-        await video_creator.apply_filters_and_send(ctx, self._bassboost, {'treble_level':treble_level})
+    async def bassboost(self, ctx, intensity : float = 1):
+        await video_creator.apply_filters_and_send(ctx, self._bassboost, {'intensity':intensity})
 
 
     async def _bitcrush(self, ctx, vstream, astream, kwargs):

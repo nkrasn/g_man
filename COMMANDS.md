@@ -24,7 +24,7 @@ _Note_: You can use `k` for kilobits in your parameters. Examples: `4.3k` instea
 | audioblend<br>audiomerge | `!audioblend` | | Blends the audio in the second to most recent video with the audio from the most recent video. | `!audioblend` |
 | audioswap | `!audioswap` | | Swaps the audio in the second to most recent video with the audio from the most recent video. | `!audioswap` |
 | backwards<br>reverse | `!backwards` | | Reverses the video. | `!backwards` |
-| bassboost | `!bassboost [treble_amount]` | `1 to 18` | Makes the audio bass boosted and loud. If you need more treble, increase `[treble_amount]` (by default it's 1). | `!bassboost`<br><br>`!bassboost 4` |
+| bassboost | `!bassboost [intensity]` | `0 to inf` | Makes the audio bass boosted and loud. Default `[intensity]` is 1. | `!bassboost`<br><br>`!bassboost 4` |
 | bitcrush | `!bitcrush [samples] [bits]` | `1 to inf`<br>`1 to inf` | Bitcrushes the audio. By default, `[samples]` is 32 and `[bits]` is 2. Higher values make a more crushed sound. | `!bitcrush`<br><br>`!bitcrush 64`<br><br>`!bitcrush 8 8` |
 | blur | `!blur <amount>` | `1 - 127` | Blurs the video. `[amount]` represents the radius of the blur around each pixel, with a default of 10. | `!blur`<br><br>`!blur 15` |
 | brightness | `!brightness [amount]` | `-1 to 1` | Adjusts the brightness of a video, with a default `[amount]` of 1. | `!brightness`<br><br>`!brightness 0.5` |
