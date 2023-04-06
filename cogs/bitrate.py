@@ -5,7 +5,6 @@ import ffmpeg
 import media_cache
 import re
 import video_creator
-import youtube_dl
 
 class Bitrate(commands.Cog):
     def __init__(self, bot):

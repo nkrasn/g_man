@@ -10,7 +10,6 @@ import subprocess
 from subprocess import Popen
 import textwrap
 import video_creator
-import youtube_dl
 
 class Fun(commands.Cog):
     def __init__(self, bot):

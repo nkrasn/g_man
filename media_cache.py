@@ -5,7 +5,7 @@ import os
 import re
 import requests
 import subprocess
-import youtube_dl
+from yt_dlp import YoutubeDL
 
 MAX_MEM_PER_CHANNEL = 8
 yt_regex = (r'(https?://)?(www\.)?(m\.youtube|youtube|youtu|youtube-nocookie)\.(com|be)/(watch\?v=|embed/|v/|.+\?v=)?([^&=%\?]{11})')
@@ -51,29 +51,14 @@ async def yt(ctx, url, suffix):
             'noplaylist': True,
             'outtmpl': 'vids/target' + str(suffix) + '.mp4'
         }
-        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(url, download=False)
-            filesize = None
-            if(re.match(yt_regex, url)):
-                filesize = info['formats'][0]['filesize']
-                print("filesize is " + str(filesize))
-            if(filesize is not None and filesize > 25600000):
-                if(filesize is None):
-                    await ctx.send("video size is none??? wtf")
-                else:
-                    await ctx.send("Video is {}mb, which exceeds the maximum size (256mb)".format(filesize / 100000.0))
-                return False
-            else:
-                #if(filesize is None and not re.match(twitter_regex, url)):
-                    #await ctx.send("this video has a filesize of None for some reason altho im still gonna try and download")
-                ydl.download([url])
-                # get the file that was saved
-                resulting_file = None
-                for f in os.listdir('vids'):
-                    if(f.startswith('target' + str(suffix) + '.')):
-                        resulting_file = 'vids/' + f
-                        break
-                return True, resulting_file
+        with YoutubeDL(ydl_opts) as ydl:
+            ydl.download([url])
+            resulting_file = None
+            for f in os.listdir('vids'):
+                if(f.startswith('target' + str(suffix) + '.')):
+                    resulting_file = 'vids/' + f
+                    break
+            return True, resulting_file
     return False, None
 
 

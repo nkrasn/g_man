@@ -9,7 +9,6 @@ import re
 import subprocess
 from subprocess import Popen
 import video_creator
-import youtube_dl
 
 class Corruption(commands.Cog):
     def __init__(self, bot):
