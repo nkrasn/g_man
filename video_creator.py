@@ -34,9 +34,9 @@ async def print_ffmpeg_error(ctx, e):
     print(err_full)
 
 # Download the video, then wrap the filter code in a try catch statement
-async def apply_filters_and_send(ctx, code, kwargs):
+async def apply_filters_and_send(ctx, code, kwargs, ydl_opts=None):
     await set_progress_bar(ctx.message, 0)
-    input_vid, is_yt, result = await media_cache.download_last_video(ctx)
+    input_vid, is_yt, result = await media_cache.download_last_video(ctx, ydl_opts)
     if(not result):
         await ctx.send("There was an error downloading the video, try uploading the video again.")
         return
@@ -76,7 +76,9 @@ async def apply_filters_and_send(ctx, code, kwargs):
             input_stream = ffmpeg.input(input_vid)
             vstream = input_stream.video
             astream = input_stream.audio
-            vstream, astream, output_params = await code(ctx, vstream, astream, kwargs)
+            output_params = {}
+            if(code is not None):
+                vstream, astream, output_params = await code(ctx, vstream, astream, kwargs)
             if('ignore' not in output_params):
                 if('fs' in output_params):
                     del output_params['fs']

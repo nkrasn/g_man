@@ -14,6 +14,7 @@ import shlex
 import subprocess
 from subprocess import Popen
 import video_creator
+from yt_dlp.utils import download_range_func
 
 class Filter(commands.Cog):
     def __init__(self, bot):
@@ -560,7 +561,15 @@ class Filter(commands.Cog):
     async def equalize(self, ctx, b1=-1, b2=-1, b3=-1, b4=-1, b5=-1, b6=-1, b7=-1, b8=-1, b9=-1, b10=-1, b11=-1, b12=-1, b13=-1, b14=-1, b15=-1, b16=-1, b17=-1, b18=-1):
         await self.equalizer(ctx, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15, b16, b17, b18)
     
-
+    def to_seconds(self, duration):
+        if(duration is None):
+            return None
+        duration = duration.split(':')
+        seconds = 0
+        for i in range(len(duration)):
+            seconds += pow(60, i) * float(duration[-(i + 1)])
+        return seconds
+    
     async def _extract(self, ctx, vstream, astream, kwargs):
         start = kwargs['start']
         end = kwargs['end']
@@ -625,7 +634,22 @@ class Filter(commands.Cog):
             if(end == 'end'):
                 end = None
 
-        await video_creator.apply_filters_and_send(ctx, self._extract, {'start':start, 'end':end})
+        input_vid_url = media_cache.get_from_cache(str(ctx.message.channel.id))[-1]
+        if(re.match(media_cache.yt_regex, input_vid_url)):
+            # Extract using yt_dlp on youtube videos, for faster extraction
+            start = self.to_seconds(start)
+            end = self.to_seconds(end)
+            if(start is None):
+                start = 0
+            if(end is None):
+                await ctx.send('At the moment, you cannot use the "end" keyword for youtube videos. For now, try giving me the length of the video, maybe add an extra second to it to make sure it gets the entire video')
+                return
+            await video_creator.apply_filters_and_send(ctx, None, {}, ydl_opts={
+                'download_ranges': download_range_func(None, [(start, end)]),
+                'force_keyframes_at_cuts': True
+            })
+        else:
+            await video_creator.apply_filters_and_send(ctx, self._extract, {'start':start, 'end':end})
         if(bookmark_name is not None):
             await self.bot.get_cog('Bookmarks').save(ctx, label=bookmark_name)
             await self.bot.get_cog('Utility').swap(ctx)

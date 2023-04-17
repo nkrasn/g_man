@@ -5,7 +5,7 @@ import os
 import re
 import requests
 import subprocess
-from yt_dlp import YoutubeDL
+import yt_dlp
 
 MAX_MEM_PER_CHANNEL = 8
 yt_regex = (r'(https?://)?(www\.)?(m\.youtube|youtube|youtu|youtube-nocookie)\.(com|be)/(watch\?v=|embed/|v/|.+\?v=)?([^&=%\?]{11})')
@@ -44,28 +44,36 @@ def get_from_cache(channel):
 
 
 # Download youtube video
-async def yt(ctx, url, suffix):
-    #await ctx.send("Downloading the video...")
+async def yt(ctx, url, suffix, extra_ydl_opts=None):
+    resolutions_to_try = (480, 360, 240, 720, 1080)
     async with ctx.typing():
-        ydl_opts = {
-            'noplaylist': True,
-            'outtmpl': 'vids/target' + str(suffix) + '.mp4'
-        }
-        with YoutubeDL(ydl_opts) as ydl:
-            ydl.download([url])
-            resulting_file = None
-            for f in os.listdir('vids'):
-                if(f.startswith('target' + str(suffix) + '.')):
-                    resulting_file = 'vids/' + f
-                    break
-            return True, resulting_file
+        for res in resolutions_to_try:
+            try:
+                ydl_opts = {
+                    'noplaylist': True,
+                    'format': f'bestvideo[height<={res}]+bestaudio/best[height<={res}]',
+                    'ffmpeg_location': 'ffmpeg-static/ffmpeg',
+                    'outtmpl': 'vids/target' + str(suffix) + '.mp4'
+                }
+                if(extra_ydl_opts is not None):
+                    ydl_opts.update(extra_ydl_opts)
+                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                    ydl.download([url])
+                    resulting_file = None
+                    for f in os.listdir('vids'):
+                        if(f.startswith('target' + str(suffix) + '.')):
+                            resulting_file = 'vids/' + f
+                            break
+                    return True, resulting_file
+            except yt_dlp.utils.DownloadError as e:
+                continue
     return False, None
 
 
-async def download_last_video(ctx):
-    return await download_nth_video(ctx, 0)
+async def download_last_video(ctx, ydl_opts={}):
+    return await download_nth_video(ctx, 0, ydl_opts)
 
-async def download_nth_video(ctx, n):
+async def download_nth_video(ctx, n, ydl_opts={}):
     n = -(n + 1) # most recent videos are at the end
     input_vid = get_from_cache(str(ctx.message.channel.id))
     if(input_vid is None): # no video found in the channel
@@ -76,7 +84,7 @@ async def download_nth_video(ctx, n):
     is_yt = True # TODO: remove this flag, all videos will be downloaded now instead of passing URL to ffmpeg
     if(re.match(yt_regex, input_vid) or re.match(twitter_regex, input_vid) or re.match(tumblr_regex, input_vid)): # yt video
         is_yt = True
-        result, input_vid = await yt(ctx, input_vid, ctx.message.id)#n)
+        result, input_vid = await yt(ctx, input_vid, ctx.message.id, ydl_opts)
         if(not result):
             #await ctx.send("Could not download the video!")
             return None, None, False
