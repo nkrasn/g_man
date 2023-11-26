@@ -8,11 +8,11 @@ import subprocess
 import yt_dlp
 
 MAX_MEM_PER_CHANNEL = 8
-yt_regex = (r'(https?://)?(www\.)?(m\.youtube|youtube|youtu|youtube-nocookie)\.(com|be)/(watch\?v=|embed/|v/|.+\?v=)?([^&=%\?]{11})')
+yt_regex = (r'(https://)?(www\.)?(m\.youtube|youtube|youtu|youtube-nocookie)\.(com|be)/(watch\?v=|embed/|v/|.+\?v=)?([^&=%\?]{11})')
 discord_cdn_regex = (r'https://(cdn|media)\.discordapp\.(com|net)/attachments/.+\.(mp4|MP4|webm|WEBM|mov|MOV|mkv|MKV|gif|GIF)')
-twitter_regex = (r'(https?://)?(www\.)?(mobile\.)?(fx)?twitter\.com/.+/status/[0-9]+(\?.+)?')
-tumblr_regex = (r'(https?://)?(www\.)?((va\.media\.tumblr\.com/tumblr_.+\.(mp4|MP4|webm|WEBM|mov|MOV|mkv|MKV|gif|GIF))|(.+\.tumblr\.com/(post|video/.+)/[0-9]+(/[0-9]+/)?))')
-hosted_file_regex = (r'(https?://)?(www\.)?.+\.(com|org|net|us|co|edu|ca|cn|fr|ch|au|in|de|jp|nl|uk|mx|no|ru|br|se|es)/.+\.(png|PNG|jpg|JPG|jpeg|JPEG|mp4|MP4|webm|WEBM|mov|MOV|mkv|MKV|gif|GIF)')
+twitter_regex = (r'(https://)?(www\.)?(mobile\.)?(((fx|vx)?twitter)|(x))\.com/.+/status/[0-9]+(\?.+)?')
+tumblr_regex = (r'(https://)?(www\.)?((va\.media\.tumblr\.com/tumblr_.+\.(mp4|MP4|webm|WEBM|mov|MOV|mkv|MKV|gif|GIF))|(.+\.tumblr\.com/(post|video/.+)/[0-9]+(/[0-9]+/)?))')
+hosted_file_regex = (r'(https://)?(www\.)?.+\.(com|org|net|us|co|edu|ca|cn|fr|ch|au|in|de|jp|nl|uk|mx|no|ru|br|se|es)/.+\.(png|PNG|jpg|JPG|jpeg|JPEG|mp4|MP4|webm|WEBM|mov|MOV|mkv|MKV|gif|GIF)')
 
 audio_filetypes = ['mp3', 'ogg', 'wav']
 video_filetypes = ['mp4', 'mov', 'avi', 'webm', 'flv', 'wmv', 'mkv']

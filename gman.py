@@ -8,6 +8,7 @@ import os
 import re
 import sys
 import traceback
+from urllib.parse import urlparse
 
 
 # If any videos were not deleted while the bot was last up, remove them
@@ -51,9 +52,12 @@ async def on_ready():
 async def on_message(message):
     # Adding URLs to the cache
     if(len(message.attachments) > 0):
+        print(message.attachments[0].url)
         msg_url = message.attachments[0].url
-        if(not msg_url.endswith('_ignore.mp4') and msg_url.split('.')[-1].lower() in media_cache.approved_filetypes):
-            media_cache.add_to_cache(message, message.attachments[0].url)
+        parsed_url = urlparse(msg_url)
+        url_path = parsed_url.path
+        if(not url_path.endswith('_ignore.mp4') and url_path.split('.')[-1].lower() in media_cache.approved_filetypes):
+            media_cache.add_to_cache(message, msg_url)
             print("Added file!")
     elif(re.match(media_cache.discord_cdn_regex, message.content) or re.match(media_cache.hosted_file_regex, message.content)):
         media_cache.add_to_cache(message, message.content)
